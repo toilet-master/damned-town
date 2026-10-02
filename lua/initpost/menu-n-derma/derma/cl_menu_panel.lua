@@ -23,7 +23,6 @@ local function changelogshi()
 	chn:SetVisible(true)
     local DScrollPanel = vgui.Create("DScrollPanel", chn)
     DScrollPanel:Dock(FILL)
-
     for i, v in pairs(text) do
         local label = DScrollPanel:Add("DLabel")
         label:SetText("-"..v..".")
@@ -35,6 +34,20 @@ local function changelogshi()
         label:SetWrap(true)
         label:SetAutoStretchVertical(true)
     end
+end
+local curmus
+function menumusicrn(filerr,volume)
+    sound.PlayFile( filerr, "noplay", function( station, errCode, errStr )
+    if IsValid(curmus) then
+        curmus:Stop()
+        curmus = nil
+    end
+	if ( IsValid( station ) ) then
+        curmus = station
+		station:Play()
+        station:SetVolume(volume or 0.15) 
+	end
+end )
 end
 local Selects = {
     {Title = "Disconnect", Func = function(luaMenu) RunConsoleCommand("disconnect") end},
@@ -96,22 +109,131 @@ function PANEL:InitializeMarkup()
 	local gm = splasheh[math.random(#splasheh)] .. " | " .. string.NiceName(mapname) 
 
     if hg.PluvTown.Active then
-        local text = "<font=ZC_MM_Title><colour="..hg.hudcolor:colorstring()..">    </colour>City</font>\n<font=ZCity_Tiny><colour=255,255,255>" .. gm .. "</colour></font>"
+        local text = "<font=ZC_MM_Title><colour="..hg.hudcolor:colorstring()..">    </colour>Town</font>\n<font=ZCity_Tiny><colour=255,255,255>" .. gm .. "</colour></font>"
 
         self.SelectedPluv = table.Random(hg.PluvTown.PluvMats)
 
         return markup.Parse(text)
     end
 
-    local text = "<font=ZC_MM_Title><colour="..hg.hudcolor:colorstring()..">Z</colour>-City</font>\n<font=ZCity_Tiny><colour=255,255,255>" .. gm .. "</colour></font>"
+    local text = "<font=ZC_MM_Title><colour="..hg.hudcolor:colorstring()..">Damned</colour>-Town</font>\n<font=ZCity_Tiny><colour=255,255,255>" .. gm .. "</colour></font>"
     return markup.Parse(text)
 end
 
 local color_red = Color(255,25,25,45)
 local clr_gray = Color(255,255,255,25)
 local clr_verygray = Color(10,10,19,235)
+local app = {
+    width = 340,
+    height = 1000,
+    top = 150,
+    right = 0,
+    fov = 23,
+    cam_pos = Vector(80, 0, 30),
+    look_ang = Angle(-15, 180, 0),
+}
+
+local function MenuUnit(num)
+    return math.floor(num * math.min(ScrW(), ScrH()) / 1000)
+end
+function GetPreviewAppearance(skibididumdum)
+    if not hg or not hg.Appearance then return end
+    local appearance
+    if hg.Appearance.LoadAppearanceFile and hg.Appearance.SelectedAppearance then
+        appearance = hg.Appearance.LoadAppearanceFile(hg.Appearance.SelectedAppearance:GetString())
+    end
+    appearance = appearance or hg.CurAppearance
+    if not appearance or not hg.Appearance.PlayerModels then return end
+    local tMdl = hg.Appearance.PlayerModels[1][appearance.AModel] or hg.Appearance.PlayerModels[2][appearance.AModel]
+    if not tMdl or not tMdl.mdl then return end
+    return table.Copy(appearance), tMdl
+end
+function appearanceappear(pp)
+	local tbl, tMdl = GetPreviewAppearance()
+   	if not tbl or not tMdl then return end
+    if hg.Appearance and hg.Appearance.PrecacheModels then
+       	hg.Appearance.PrecacheModels()
+    end
+	local holderW = MenuUnit(app.width)
+	local holderH = MenuUnit(app.height)
+    local targetX = ScrW() - holderW - MenuUnit(app.right)
+    local targetY = MenuUnit(app.top)
+	pp.hholder = vgui.Create("DPanel",pp)
+	local holder = pp.hholder
+	holder:SetSize(holderW, holderH)
+    holder:SetPos(targetX,targetY)
+    holder:SetAlpha(0)
+    holder:SetMouseInputEnabled(false)
+	holder.Paint = function() end
+	pp.hprev = vgui.Create("DModelPanel", holder)
+	local prev = pp.hprev
+	prev:SetModel((util.IsValidModel(tostring(tMdl.mdl)) and tostring(tMdl.mdl)) or "models/player/group01/male_04.mdl")
+	prev:Dock(FILL)
+	prev:SetFOV(app.fov)
+	prev:SetLookAng(app.look_ang)
+    prev:SetCamPos(app.cam_pos)
+	prev.AppearanceTable = tbl
+	function prev:LayoutEntity(ent)
+		ent:SetSubMaterial()
+		local appearance = self.AppearanceTable
+        if not appearance or not hg or not hg.Appearance or not hg.Appearance.PlayerModels then return end
+		local modelData = hg.Appearance.PlayerModels[1][appearance.AModel] or hg.Appearance.PlayerModels[2][appearance.AModel]
+        if not modelData or not modelData.mdl then return end
+        local colorData = appearance.AColor or color_white
+        ent:SetNWVector("PlayerColor", Vector((colorData.r or 255) / 255, (colorData.g or 255) / 255, (colorData.b or 255) / 255))
+		local clothes = appearance.AClothes or {}
+        local mats = ent:GetMaterials()
+        for k, v in SortedPairs(modelData.submatSlots or {}) do
+            local slot = 1
+            for i = 1, #mats do
+                if mats[i] == v then
+                    slot = i - 1
+                    break
+                end
+            end
+            local sexID = modelData.sex and 2 or 1
+            local clothMat = hg.Appearance.Clothes[sexID] and hg.Appearance.Clothes[sexID][clothes[k]]
+            ent:SetSubMaterial(slot, clothMat or (hg.Appearance.Clothes[sexID] and hg.Appearance.Clothes[sexID].normal) or nil)
+        end
+
+        local facemapSlot = hg.Appearance.FacemapsModels and hg.Appearance.FacemapsModels[modelData.mdl]
+        for i = 1, #mats do
+            if facemapSlot and hg.Appearance.FacemapsSlots[mats[i]] and hg.Appearance.FacemapsSlots[mats[i]][appearance.AFacemap] then
+                ent:SetSubMaterial(i - 1, hg.Appearance.FacemapsSlots[mats[i]][appearance.AFacemap])
+            end
+        end
+
+        appearance.ABodygroups = appearance.ABodygroups or {}
+        for k, v in SortedPairs(ent:GetBodyGroups()) do
+            if not appearance.ABodygroups[v.name] then continue end
+            local bodygroupData = hg.Appearance.Bodygroups[v.name]
+            local bodygroupSet = bodygroupData and bodygroupData[modelData.sex and 2 or 1] and bodygroupData[modelData.sex and 2 or 1][appearance.ABodygroups[v.name]]
+            if not bodygroupSet then continue end
+            for i = 0, #v.submodels do
+                if bodygroupSet[1] == v.submodels[i] then
+                    ent:SetBodygroup(k - 1, i)
+                    break
+                end
+            end
+        end
+        ent:SetSequence("Cidle_All")
+	end
+	function prev:PostDrawModel(ent)
+        
+        local appearance = self.AppearanceTable
+        if not appearance or not appearance.AAttachments then return end
+        for _, attach in ipairs(appearance.AAttachments) do
+            local accessoryData = hg.Accessories and hg.Accessories[attach]
+            if accessoryData then
+                DrawAccesories(ent, ent, attach, accessoryData, false, true)
+            end
+        end
+        ent:SetupBones()
+    end
+end
 
 function PANEL:Init()
+    menumusicrn("sound/zc_dyna_music/medge/a13.mp3")
     self:SetAlpha(0)
     self:SetSize(ScrW(), ScrH())
     self:Center()
@@ -123,7 +245,7 @@ function PANEL:Init()
     self:ShowCloseButton(false)
     curent_panel = nil
     self.Title, self.TitleShadow = self:InitializeMarkup()
-
+    appearanceappear(self)
     timer.Simple(0, function()
         if self.First then
             self:First()
@@ -133,8 +255,8 @@ function PANEL:Init()
     self.lDock = vgui.Create("DPanel", self)
     local lDock = self.lDock
     lDock:Dock(LEFT)
-    lDock:SetSize(ScrW() / 4, ScrH())
-    lDock:DockMargin(ScreenScale(0), ScreenScaleH(90), ScreenScale(10), ScreenScaleH(90))
+    lDock:SetSize(ScrW() / 2, ScrH())
+    lDock:DockMargin(ScreenScale(0), ScreenScaleH(90), ScreenScale(30), ScreenScaleH(90))
     lDock.Paint = function(this, w, h)
         if hg.PluvTown.Active then
             surface.SetDrawColor(color_white)
@@ -142,7 +264,7 @@ function PANEL:Init()
             surface.DrawTexturedRect(0, ScreenScale(27), ScreenScale(35), ScreenScale(27))
         end
 
-        self.Title:Draw(ScreenScale(15), ScreenScale(50), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 255, TEXT_ALIGN_LEFT)
+        self.Title:Draw(ScreenScale(15), ScreenScale(40), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 255, TEXT_ALIGN_LEFT)
     end
 
     self.Buttons = {}
@@ -300,8 +422,10 @@ end
 
 function PANEL:Close()
     self:AlphaTo( 0, 0.1, 0, function() self:Remove() end)
+    
     self:SetKeyboardInputEnabled(false)
     self:SetMouseInputEnabled(false)
+    menumusicrn("",nil)
 end
 
 vgui.Register( "ZMainMenu", PANEL, "ZFrame")

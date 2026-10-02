@@ -6,7 +6,7 @@ SWEP.Category = "Weapons - Melee"
 SWEP.Spawnable = true
 SWEP.AdminOnly = false
 
-SWEP.WorldModel = "models/weapons/w_knife_switch.mdl"
+SWEP.WorldModel = "models/weapons/salat/reanim/swch_knife.mdl"
 SWEP.WorldModelReal = "models/weapons/salat/reanim/c_s&wch0014.mdl"
 SWEP.WorldModelExchange = false
 

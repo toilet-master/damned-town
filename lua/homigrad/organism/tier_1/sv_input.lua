@@ -160,14 +160,61 @@ local sounds = {
 }
 
 local ents_Create = ents.Create
---"models/mosi/fnv/props/gore/gorelegb03.mdl" why is this shit so big lol
 local meatyshit = {
 	["ValveBiped.Bip01_L_Forearm"] = {"models/mosi/fnv/props/gore/gorearm02.mdl","models/mosi/fnv/props/gore/gorearm03.mdl"},
 	["ValveBiped.Bip01_R_Forearm"] = {"models/mosi/fnv/props/gore/gorearm02.mdl","models/mosi/fnv/props/gore/gorearm03.mdl"},
 	["ValveBiped.Bip01_L_Calf"] = {"models/mosi/fnv/props/gore/goreleg02.mdl", "models/mosi/fnv/props/gore/goreleg01.mdl"},
 	["ValveBiped.Bip01_R_Calf"] = {"models/mosi/fnv/props/gore/goreleg02.mdl", "models/mosi/fnv/props/gore/goreleg01.mdl"}
 }
-function hg.organism.AmputateLimb(org, limb)
+local function IsChildOfBone(ent, childBoneID, parentBoneID)
+    local current = childBoneID
+    while current and current ~= -1 do
+        if current == parentBoneID then return true end
+        current = ent:GetBoneParent(current)
+    end
+    return false
+end
+local function raggib(ent, targetBoneName)
+    if not IsValid(ent) then return end
+
+    local targetBoneID = ent:LookupBone(targetBoneName)
+    if not targetBoneID then return end
+    local limbRagdoll = ents.Create("prop_ragdoll")
+    if not IsValid(limbRagdoll) then return end
+    limbRagdoll:SetModel(ent:GetModel())
+    limbRagdoll:SetPos(ent:GetPos())
+    limbRagdoll:SetAngles(ent:GetAngles())
+    limbRagdoll:SetSkin(ent:GetSkin())
+    for k, v in pairs(ent:GetBodyGroups()) do
+        limbRagdoll:SetBodygroup(v.id, ent:GetBodygroup(v.id))
+    end
+    limbRagdoll:Spawn()
+    for i = 0, limbRagdoll:GetPhysicsObjectCount() - 1 do
+        local physLimb = limbRagdoll:GetPhysicsObjectNum(i)
+        local physMain = ent:GetPhysicsObjectNum(i)
+        if IsValid(physLimb) and IsValid(physMain) then
+            physLimb:SetPos(physMain:GetPos())
+            physLimb:SetAngles(physMain:GetAngles())
+            physLimb:SetVelocity(physMain:GetVelocity())
+        end
+    end
+    for i = 0, limbRagdoll:GetBoneCount() - 1 do
+        if i ~= targetBoneID and not IsChildOfBone(limbRagdoll, i, targetBoneID) then
+            limbRagdoll:ManipulateBoneScale(i, Vector(0, 0, 0))
+            local physBone = limbRagdoll:TranslateBoneToPhysBone(i)
+            local physObj = limbRagdoll:GetPhysicsObjectNum(physBone)
+            if IsValid(physObj) then
+                physObj:EnableCollisions(false)
+                physObj:SetMass(0.1)
+            end
+        end
+    end
+	ApplyAppearanceRagdoll(limbRagdoll, ent)
+	limbRagdoll:SetNetVar("Accessories", "")
+	limbRagdoll:SetNWString("PlayerName", "Severed limb")
+	limbRagdoll:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+end
+function hg.organism.AmputateLimb(org, limb,dmgtype)
 	if org[limb.."amputated"] == nil then return end
 
 	local bone = limbs[limb]
@@ -203,6 +250,15 @@ function hg.organism.AmputateLimb(org, limb)
 	local ent = hg.GetCurrentCharacter(org.owner)
 	--print(bone)
 	SpawnMeatGore(ent, select(1, ent:GetBonePosition(ent:LookupBone(bone))), 1,	Vector(0,0,0) , 1,meatyshit[bone])
+	--[[if IsValid(dmgtype) and (((dmgtype == DMG_BUCKSHOT or dmgtype == DMG_BLAST) and math.random(1, 2) == 1) or (dmgtype == DMG_SLASH)) then
+		local targetEnt = IsValid(ent) and ent or org.owner
+		raggib(org.owner, bone)
+	else
+		
+		local targetEnt = IsValid(ent) and ent or org.owner это заменить потом
+		raggib(org.owner, bone)
+	end]]
+	
 
 	hook.Run("OnAmputateLimb", org, ent, limb)
 
@@ -984,7 +1040,7 @@ hook.Add("EntityTakeDamage", "homigrad-damage", function(ent, dmgInfo)
 				if blast then
 					for i, limb in ipairs(limbs) do
 						if !org[limb.."amputated"] and math.random(5) < 200 / lend then
-							hg.organism.AmputateLimb(org, limb)
+							hg.organism.AmputateLimb(org, limb, dmgtype)
 						end
 					end
 				else
@@ -1570,7 +1626,7 @@ function hg.BreakNeck(ent)
 			local pspine = ent:GetPhysicsObjectNum(spine)
 			local phead = ent:GetPhysicsObjectNum(head)
 
-			local lpos, lang = WorldToLocal(phead:GetPos() + phead:GetAngles():Forward() * -2 + phead:GetAngles():Up() * -1.5, angle_zero, pspine:GetPos(), pspine:GetAngles())
+			local lpos, lang = WorldToLocal(phead:GetPos() + phead:GetAngles():Forward() * -1.5 + phead:GetAngles():Up(), angle_zero, pspine:GetPos(), pspine:GetAngles())
 			
 			phead:SetPos(pspine:GetPos() + pspine:GetAngles():Forward() * 12.9 + pspine:GetAngles():Right() * -1)
 

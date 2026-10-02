@@ -312,6 +312,9 @@ hook.Add("Think", "Fake", function()
 		spine = ragdoll:GetPhysicsObjectNum(realPhysNum(ragdoll,1))
 		rhand = ragdoll:GetPhysicsObjectNum(realPhysNum(ragdoll,7))
 		lhand = ragdoll:GetPhysicsObjectNum(realPhysNum(ragdoll,5))
+		--local lt = ragdoll:GetPhysicsObjectNum(realPhysNum(ragdoll,22))
+		--local rt = ragdoll:GetPhysicsObjectNum(realPhysNum(ragdoll,18))
+		--local spine2 = ragdoll:GetPhysicsObjectNum(ragdoll:TranslateBoneToPhysBone(ragdoll:LookupBone("ValveBiped.Bip01_Spine2"))) --jopa huy
 		ang = spine:GetAngles()
 
 		local angles2 = -(-angles)
@@ -347,7 +350,7 @@ hook.Add("Think", "Fake", function()
 
 					if not ply:KeyDown(IN_USE) then
 						shadowControl(ragdoll, 10, 0.001, nil, nil, nil, ragdoll:GetPhysicsObjectNum(realPhysNum(ragdoll,8)):GetPos(), 40, 10)
-						shadowControl(ragdoll, 1, 0.001, nil, nil, nil, ragdoll:GetPhysicsObjectNum(realPhysNum(ragdoll,8)):GetPos(), 00, 10)
+						shadowControl(ragdoll, 1, 0.001, nil, nil, nil, ragdoll:GetPhysicsObjectNum(realPhysNum(ragdoll,8)):GetPos(), 0, 10)
 						shadowControl(ragdoll, 2, 0.001, nil, nil, nil, ragdoll:GetPhysicsObjectNum(realPhysNum(ragdoll,8)):GetPos(), 0, 10)
 						shadowControl(ragdoll, 3, 0.001, nil, nil, nil, ragdoll:GetPhysicsObjectNum(realPhysNum(ragdoll,8)):GetPos(), 20, 10)
 						shadowControl(ragdoll, 11, 0.001, nil, nil, nil, spine:GetPos() + spine:GetAngles():Forward() * 50, 30, 10)
@@ -356,6 +359,30 @@ hook.Add("Think", "Fake", function()
 				end
 			end
 		end
+		--[[if ply.organism and ply.organism.otrub and IsValid(ply.FakeRagdoll) then
+			print("HUY")
+			local ltAng = lt:GetAngles()
+			local foldAngle1 = Angle(ltAng.p, ltAng.y, ltAng.r)
+			foldAngle1:RotateAroundAxis(-ltAng:Right(), -80) 
+			local foldPos1 = lt:GetPos()
+			local rtAng = rt:GetAngles()
+			local foldAngle2 = Angle(rtAng.p, rtAng.y, rtAng.r)
+			foldAngle2:RotateAroundAxis(rtAng:Right(), -80)
+			local foldPos2 = rt:GetPos()
+			local spineang = spine2:GetAngles()
+			spineang:RotateAroundAxis(ang:Up(), 90)
+			hg.ShadowControl(ragdoll, 3, 0.001, spineang, 5100, nil, spine:GetPos(), 100, 0)
+			hg.ShadowControl(ragdoll, 4, 0.001, spineang, 500, nil, spine2:GetPos(), 100, 0)
+			
+			if ply.organism.rlegamputated == false then
+				shadowControl(ragdoll, 19, 0.001, foldAngle2, 115, 10, foldPos2, 40, 10) 
+			end
+			if ply.organism.llegamputated == false then
+				shadowControl(ragdoll, 23, 0.001, foldAngle1, 115, 10, foldPos1, 40, 10)
+			end
+			--shadowControl(ragdoll, 3, 0.001, nil, nil, nil, spine:GetPos() * -10, 100, 100)
+			--shadowControl(ragdoll, 5, 0.001, nil, nil, nil, (lhand:GetPos()):GetNormalized() * -5, 100, 10)
+		end]]
 		
 		if not wep.RagdollFunc then
 			local force = math.max(1 - org.larm / 1.3, 0)
@@ -853,13 +880,13 @@ hook.Add("Think", "Fake", function()
 
 				local force = angles2:Forward()
 				force:Normalize()
-				force = force * 100 * ragdoll.dtime / 0.015 * ragdoll.power
+				force = force * 100 * ragdoll.dtime / 0.020 * ragdoll.power
 
 				if org.lleg >= 1 or org.rleg >= 1 then
 					org.painadd = org.painadd + ragdoll.dtime * 2 * (org.lleg + org.rleg)
 				end
-				//rleg:ApplyForceCenter(force)
-				//lleg:ApplyForceCenter(force)
+				rleg:ApplyForceCenter(force)
+				lleg:ApplyForceCenter(force)
 			end
 		end
 		local vel = ragdoll:GetVelocity()

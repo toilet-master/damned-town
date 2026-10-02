@@ -76,6 +76,7 @@ hook.Add("Org Clear", "Main", function(org)
 	org.noradrenaline = 0
 
 	org.blindness = nil
+	org.canstiffen = true
 
 	if IsValid(org.owner) then
 		if org.owner:IsPlayer() and org.owner:Alive() then
@@ -312,6 +313,7 @@ hook.Add("HomigradDamage", "Berserk", function(ply, dmgInfo, hitgroup, ent)
 end)
 
 hook.Add("Org Think", "Main", function(owner, org, timeValue)
+	
 	if not IsValid(owner) then
 		hg.organism.list[owner] = nil
 		return

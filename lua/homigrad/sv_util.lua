@@ -62,8 +62,16 @@ local function setBloodonSpawn( ent )
     ent.bloodColorHitFix = getBloodColor( ent )
     ent:SetBloodColor( -1 )
 end
-
+util.AddNetworkString("apphud")
 hook.Add( "PlayerSpawn", "ResponsiveHits_PlayerSpawn", setBloodonSpawn )
+hook.Add( "PlayerSpawn", "appaply",function(ply)
+	net.Start( "apphud" )
+		local hasAppearance = IsValid(ply) and istable(ply.CurAppearance) and ply.CurAppearance.AModel ~= nil
+		net.WriteString(ply:GetModel())
+		net.WriteTable(hasAppearance and table.Copy(ply.CurAppearance) or {})
+		net.WriteBool(hasAppearance)
+	net.Send(ply)
+end)
 hook.Add( "OnEntityCreated", "ResponsiveHits_OnEntityCreated", function( ent )
     timer.Simple( 0, function()
         if not IsValid( ent ) then return end

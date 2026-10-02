@@ -174,7 +174,7 @@ function SWEP:Shoot(override)
 
 		if tr.Entity then
             local ent = tr.Entity
-			
+			if ent == owner then return end
 			if not ent:IsPlayer() and not ent:IsRagdoll() then return end
             if IsValid(ent.FakeRagdoll) then return end
             

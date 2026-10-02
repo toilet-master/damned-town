@@ -9,6 +9,7 @@ if SERVER then
 	resource.AddWorkshop("3657294321") -- first content addon
 	resource.AddWorkshop("3544105055") -- second content addon
 	resource.AddWorkshop("3257937532") -- distac content
+	resource.AddWorkshop("3756243760")
 end
 local sides = {
 	["sv_"] = "sv_",

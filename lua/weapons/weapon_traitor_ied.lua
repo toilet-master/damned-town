@@ -137,7 +137,6 @@ if CLIENT then
 		surface.SetDrawColor(colWhite)
 		surface.DrawRect(x - 25 * lerpthing * 0.1, y - 2.5, 50 * lerpthing * 0.1, 5)
 		surface.DrawRect(x - 2.5, y - 25 * lerpthing * 0.1, 5, 50 * lerpthing * 0.1)
-
 		if IsValid(tr.Entity) and not tr.Entity:IsPlayer() and not tr.Entity:IsRagdoll() and not self:GetPlanted() then
 			local min, max = tr.Entity:GetModelBounds()
 			local minmaxs = (max - min)
@@ -355,6 +354,22 @@ end
 function SWEP:CanSecondaryAttack()
 	return IsValid(self:GetOwner()) and not hg.GetCurrentCharacter(self:GetOwner()):IsRagdoll()
 end
+function SWEP:TakeBack()
+	self.WorldModel = "models/props_junk/cardboard_jox004a.mdl"
+	self:GetOwner():EmitSound("npc/footsteps/softshoe_generic6.wav", 75, math.random(90, 110), 1, CHAN_ITEM)
+	self.Planted = false
+	self.PlantedOnSelf = false
+	
+	self:SetPlanted(false)
+	net.Start("ied_have_the_bomb")
+		net.WriteEntity(self)
+		net.WriteBool(false)
+	net.Broadcast()
+	if IsValid(self.HaveTheBomb) then
+		self.HaveTheBomb:Remove()
+	end
+	self.HaveTheBomb = nil
+end
 
 function SWEP:SecondaryAttack(calledFrom)
 	if SERVER then
@@ -363,7 +378,7 @@ function SWEP:SecondaryAttack(calledFrom)
 				return
 			end
 		end
-		if not self.Planted then
+		if not self.Planted and (self.nextattackhuy) <= CurTime() then
 			local Owner = self:GetOwner()
 			local Tr = self:GetEyeTrace()
 
@@ -373,10 +388,28 @@ function SWEP:SecondaryAttack(calledFrom)
 			bomb:SetModelScale(0.4)
 			bomb:Spawn()
 			bomb:Activate()
-
-			if IsValid(bomb:GetPhysicsObject()) then
-				bomb:GetPhysicsObject():SetMass(20)
+			bomb.curt = CurTime()
+			local name = "ied_pickup"..bomb:EntIndex()
+				hook.Add("Think", name, function()
+					if self:GetOwner() then
+						if self:GetOwner():KeyPressed(IN_USE) then
+							local tr = self:GetOwner():GetEyeTrace()
+							if IsValid(tr.Entity) and tr.Entity == bomb and self:GetOwner():GetPos():Distance(tr.HitPos) <= 100 then
+								self:TakeBack()
+							end
+						end
+					end
+				end)
+			bomb:CallOnRemove("removethink",function()
+				self.nextattackhuy = CurTime() + 2
+				hook.Remove("Think", name)
+			end)
+			local phys = bomb:GetPhysicsObject()
+			if IsValid(phys) then
+				phys:SetMass(20)
 			end
+
+			
 
 			self.Planted = true
 			self.HaveTheBomb = bomb
@@ -385,6 +418,7 @@ function SWEP:SecondaryAttack(calledFrom)
 
 			net.Start("ied_have_the_bomb")
 			net.WriteEntity(self)
+			net.WriteBool(true)
 			net.Broadcast()
 
 			Owner:EmitSound("snd_jack_hmcd_bombrig.wav",60,100,1,CHAN_AUTO)
@@ -394,27 +428,36 @@ function SWEP:SecondaryAttack(calledFrom)
 	end
 end
 
+
 function SWEP:Initialize()
 	self:SetHold(self.HoldType)
 	self.Planted = false
-	self.HaveTheBomb = false
+	self.HaveTheBomb = nil
 	self.WorldModel = "models/props_junk/cardboard_jox004a.mdl"
+	
 end
 
 if CLIENT then
 	net.Receive("ied_have_the_bomb",function(len)
 		local self = net.ReadEntity()
-
-		self.WorldModel = "models/saraphines/insurgency explosives/ied/insurgency_ied_phone.mdl"
+		local bool = net.ReadBool()
 		if IsValid(self.model) then
 			self.model:Remove()
 			self.model = nil
 		end
-		self.model = ClientsideModel(self.WorldModel or "models/saraphines/insurgency explosives/ied/insurgency_ied_phone.mdl")
-		self.model:SetSkin(1)
-		self.offsetVec = Vector(5, 0.5, -15)
-		self.offsetAng = Angle(0, 70, 180)
-		self.ModelScale = 1
+		local model = bool == true and "models/saraphines/insurgency explosives/ied/insurgency_ied_phone.mdl" or "models/props_junk/cardboard_jox004a.mdl" 
+		self.model = ClientsideModel(model)
+		if bool == false then
+			self.model:SetSkin(0)
+			self.offsetVec = Vector(3, -3, 0)
+			self.offsetAng = Angle(0, 0, 0)
+			self.ModelScale = 0.4
+		else
+			self.model:SetSkin(1)
+			self.offsetVec = Vector(5, 0.5, -15)
+			self.offsetAng = Angle(0, 70, 180)
+			self.ModelScale = 1
+		end
 	end)
 
 	function SWEP:PrimaryAttack()
@@ -452,6 +495,7 @@ if SERVER then
 
 				net.Start("ied_have_the_bomb")
 				net.WriteEntity(self)
+				net.WriteBool(true)
 				net.Broadcast()
 
 				Owner:EmitSound("snd_jack_hmcd_bombrig.wav",50,100,1,CHAN_AUTO)
@@ -477,31 +521,23 @@ if SERVER then
 	end
 
 
-	function SWEP:Reload() -- hell nah
-		--if not self.Planted and not self.PlantedOnSelf then
-		--	local Owner = self:GetOwner()
---
-		--	self.PlantedOnSelf = true
---
---
-		--	self.WorldModel = "models/saraphines/insurgency explosives/ied/insurgency_ied_phone.mdl"
---
-		--	net.Start("ied_have_the_bomb")
-		--	net.WriteEntity(self)
-		--	net.Broadcast()
---
-		--	Owner:EmitSound("snd_jack_hmcd_bombrig.wav",50,100,1,CHAN_AUTO)
---
-		--	self.Planted = true
---
---
-		--	timer.Simple(5, function()
-		--		if IsValid(self) and IsValid(Owner) and self.PlantedOnSelf then
-		--			ExplodeTheItem(self, Owner)
-		--		end
-		--	end)
---
-		--	self:SetNextPrimaryFire(CurTime() + 2)
-		--end
+function SWEP:Reload()
+	
+	if (self.nextattackhuy) <= CurTime() and not self.Planted and not self.PlantedOnSelf then
+		self.nextattackhuy = CurTime() + 2
+		local Owner = self:GetOwner()
+		self.PlantedOnSelf = true
+		self.WorldModel = "models/saraphines/insurgency explosives/ied/insurgency_ied_phone.mdl"
+		net.Start("ied_have_the_bomb")
+		net.WriteEntity(self)
+		net.WriteBool(true)
+		net.Broadcast()
+		Owner:EmitSound("snd_jack_hmcd_bombrig.wav",50,100,1,CHAN_AUTO)
+		self.Planted = true
+		self:SetNextPrimaryFire(CurTime() + 2)
+		elseif (self.nextattackhuy) <= CurTime() then
+			self.nextattackhuy = CurTime() + 2
+			self:TakeBack()
+		end
 	end
 end

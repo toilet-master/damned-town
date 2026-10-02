@@ -9,21 +9,7 @@ local hg_firstperson_death = CreateClientConVar("hg_firstperson_death", "0", tru
 local hg_font = CreateClientConVar("hg_font", "Bahnschrift", true, false, "change every text font to selected because ui customization is cool")
 local hg_hudcolor = CreateClientConVar("hg_hudcolor", "199 2 2", true, false, "Choose hud color cuz its cool yea very")
 local hg_attachment_draw_distance = CreateClientConVar("hg_attachment_draw_distance", 0, true, nil, "distance to draw attachments", 0, 4096)
---[[function hg.hudcolor:colorchange()
-    local colors = {
-        Color(155,0,0),
-        Color(52,146,235),
-        Color(52,235,52),
-        Color(255,158,223),
-        Color(255,0,234),
-        Color(255,217,0),
-        Color(255,255,255),
-        Color(125,0,180),
-        Color(255,135,0)
-    }
-    local pickedcolor = colors[hg_hudcolor:GetInt()]
-    return pickedcolor
-end]]
+local hg_bars = CreateClientConVar("hg_bars", "0", true, false, "Toggle bars in hud", 0, 1)
 function  hg.hudcolor:colorchange()
     local hehe = hg_hudcolor:GetString()
     local r, g, b = string.match(hehe, "(%d+)%s+(%d+)%s+(%d+)")
@@ -115,7 +101,8 @@ hg.settings:AddOpt("Blood","hg_blood_sprites", "Blood Sprites (DISABLED FOR EVER
 hg.settings:AddOpt("Blood","hg_old_blood", "Old blood")
 
 hg.settings:AddOpt("UI","hg_font", "Change Custom Font", false, true)
---hg.settings:AddOpt("UI","hg_hudcolor", "Change Hud Color", nil, nil, "int")
+hg.settings:AddOpt("UI","hg_bars", "Have hud bars?")
+hg.settings:AddOpt("UI","hg_hudcolor", "Change Hud Color", nil, nil, "color")
 
 hg.settings:AddOpt("Weapons","hg_weaponshotblur_enable", "Shooting Blur")
 hg.settings:AddOpt("Weapons","hg_dynamic_mags", "Dynamic Ammo Inspect")
@@ -166,12 +153,25 @@ function hg.GetConVarType(convar)
     if (stringv == '0' and not boolVal) or (stringv == '1' and boolVal) then
         return 'bool'
     end
+    local segments = string.Explode(" ", string.Trim(stringv))
+    if #segments == 3 or #segments == 4 then
+        local isColor = true
+        for _, val in ipairs(segments) do
+            local num = tonumber(val)
+            if not num or num < 0 or num > 255 or math.floor(num) ~= num then
+                isColor = false
+                break
+            end
+        end
+        if isColor then return "color" end
+    end
 
     if tonumber(stringv) and math.floor(stringv) == floatVal then
         if intVal == floatVal then
             return "int"
         end
     end
+
 
     return "string"
 end
@@ -202,6 +202,7 @@ local clr_5 = Color(30, 29, 29, 30)
 local clr_6 = Color(255, 255, 255, 100)
 local clr_7 = Color(255, 255, 255, 200)
 local clr_8 = Color(70, 130, 180)
+local colorWindow
 function hg.CreateButton(buttonData, convarName, ParentPanel, yPos)
     local convar = GetConVar(convarName)
 
@@ -307,6 +308,59 @@ function hg.CreateButton(buttonData, convarName, ParentPanel, yPos)
             if convar then
                 valueLabel:SetText(convar:GetInt())
             end
+        end
+    elseif convarType == 'color' then
+        local clrthing = vgui.Create("DButton",pppanel)
+        clrthing:SetSize(pppanel:GetWide()/32, pppanel:GetTall()/2)
+        clrthing:SetText("")
+        clrthing:SetPos(pppanel:GetWide()-pppanel:GetWide()/8-20, pppanel:GetTall()/2-clrthing:GetTall()/2)
+        clrthing.Paint = function(self, w, h)
+            surface.SetDrawColor(hg.hudcolor:colorchange())
+            surface.DrawRect(0, 0, w, h)
+            surface.SetDrawColor(110, 110, 110, 255)
+            surface.DrawOutlinedRect(0, 0, w, h)
+        end
+        clrthing.DoClick = function()
+            if IsValid(colorWindow) then return end
+            colorWindow = vgui.Create("ZFrame")
+
+            colorWindow:SetSize(ScrW()/4, ScrH()/2)
+            colorWindow:Center()
+            colorWindow:SetPos(pppanel:GetWide()-pppanel:GetWide()/8-20, pppanel:GetTall()/2-clrthing:GetTall()/4)
+            colorWindow:SetTitle("Hud color picker")
+            colorWindow:MakePopup()
+            ParentPanel.OnRemove = function()
+                if IsValid(colorWindow) then
+                colorWindow:Remove()
+                end
+            end
+            mixer = vgui.Create("DColorMixer",colorWindow)
+            mixer:SetColor(hg.hudcolor:colorchange())
+            mixer:SetPalette(true)
+            --mixer:Dock(FILL)
+            mixer:SetAlphaBar(false)
+            mixer:SetWangs(true)
+            --mixer:Dock(FILL)
+            mixer:Center()
+            mixer:SetTall(colorWindow:GetTall()/1.65) 	
+            local apply = vgui.Create("DButton",colorWindow)
+            apply:SetText( "" )
+            apply:SetSize(pppanel:GetWide()/8,colorWindow:GetTall()/16)
+            apply:Dock(BOTTOM)
+            function apply:Paint(w,h)
+                surface.SetDrawColor(Color(0,105,0))
+                surface.DrawRect(0, 0, w, h)
+                draw.SimpleText("Apply","HomigradFontMedium",w/2.25,0,Color(255,255,255))
+            end
+            function apply:PaintOver(w,h)
+                surface.SetDrawColor(Color(54,54,54,220))
+                surface.DrawOutlinedRect(0, 0, w, h, 2.5)
+            end
+            apply.DoClick = function()
+                local color = mixer:GetColor()
+                RunConsoleCommand("hg_hudcolor", string.format("%d %d %d", color.r, color.g, color.b))
+            end
+
         end
         
     elseif convarType == 'string' then

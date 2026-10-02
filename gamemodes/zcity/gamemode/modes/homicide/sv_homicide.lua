@@ -1710,7 +1710,6 @@ function MODE.SpawnPlayers(spawn_with_subroles)
                     end
                 end
                 
-
                 net.Start("HMCD_RoundStart")
                     net.WriteBool(this_player.isTraitor)
                     net.WriteBool(this_player.isGunner)

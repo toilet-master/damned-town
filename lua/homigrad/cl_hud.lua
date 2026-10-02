@@ -22,6 +22,7 @@ local gordon_hide = {
 }
 
 hook.Add("HUDShouldDraw", "homigrad", function(name)
+	if not lply then return end
 	if hide[name] or lply.PlayerClassName and lply.PlayerClassName == "Gordon" and gordon_hide[name] then
 		return false
 	end
@@ -33,20 +34,28 @@ end)
 hook.Add("DrawDeathNotice", "homigrad", function()
 	return false
 end)
-
-hook.Add("HUDWeaponPickedUp", "HidePickedStuff", function(wep)
-	--if not IsValid(lply) or not lply:Alive() then return end
+local pickhis = {}
+local function additem(name)
+	table.insert(pickhis,
+		{
+			text = name,
+			time = CurTime() + 4,
+			alpha = 255
+		}
+	)
+	
+end
+local zp
+hook.Add("HUDWeaponPickedUp", "DrawPickedStuff", function(wep)
+	if not IsValid(lply) or not lply:Alive() or lply.organism.otrub then return end
 	if IsValid(lply) and lply.PlayerClassName and lply.PlayerClassName == "Gordon" then
 		return
 	end
-
-	--[[if not IsValid(wep) then return end
-	if not wep.GetPrintName then return end
-	
-	lply:Notify("+ " .. wep:GetPrintName(), 0)]]
-
+	if not IsValid(wep) then return end
+	--if not wep.GetPrintName then return end
 	return false
 end)
+local y = ScrH() - 200
 
 hook.Add("HUDAmmoPickedUp", "HidePickedStuff", function(ammoname, amt)
 	if IsValid(lply) and lply.PlayerClassName and lply.PlayerClassName == "Gordon" then
@@ -187,7 +196,7 @@ hg.radialOptions = hg.radialOptions or {}
 local colBlack = Color(0, 0, 0, 152)
 local colOption = Color(40, 0, 55, 152)
 local colWhite = Color(255, 255, 255, 255)
-local colWhiteTransparent = Color(176, 40, 40, 100)
+local colWhiteTransparent = Color(255,50,50,180)
 local colTransparent = Color(0, 0, 0, 0)
 local matHuy = Material("vgui/white")
 local vecXY = Vector(0, 0)
@@ -198,13 +207,15 @@ local current_option = 1
 local current_option_select = 1
 local hook_Run = hook.Run
 
-local incoentCol = Color(128,0,0) --virginitycol = Color(128)
-local taitorCol = Color(155,0,0)
+local incoentCol = Color(128,0,0)
+
 
 local menuPanel
 
 local colBack = Color(0,0,0)
 local surface, draw, hook, IsColor, IsValid, math, input = surface, draw, hook, IsColor, IsValid, math, input
+
+
 local function CreateRadialMenu(options_arg, bAutoClose)
 	local sizeX, sizeY = ScrW(), ScrH()
 	hg.radialOptions = {}
@@ -277,7 +288,6 @@ local function CreateRadialMenu(options_arg, bAutoClose)
 		local deg = (vecXY:GetNormalized() - vecDown):Angle()
 		//deg[2] = deg[2] - 180
 		deg = math.NormalizeAngle((deg[2] - 180) * 2) + 180
-		
 		local options = {}
 		if paining then
 			options[#options + 1] = {function() RunConsoleCommand("hg_phrase") end, ""}
@@ -299,7 +309,7 @@ local function CreateRadialMenu(options_arg, bAutoClose)
 			if sqrt > 0 and current_option > 0 and num and !intersect_xyPartDeg then return end
 
 			optionSelected[num] = optionSelected[num] or 0
-			optionSelected[num] = LerpFT(0.1, optionSelected[num], isMouseIntersecting and 1 or 0)
+			optionSelected[num] = LerpFT(0.1, optionSelected[num], isMouseIntersecting and 0.65 or 0)
 
 			if option[3] then --// Multibutton
 				surface.SetMaterial(matHuy)
@@ -380,9 +390,6 @@ local function CreateRadialMenu(options_arg, bAutoClose)
 			draw.SimpleText(lply:GetPlayerName(),"HomigradFontGigantoNormous",scrW * 0.02 * viewLerp,scrH * 0.04, col, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 			draw.SimpleText( ( (lply.role and lply.role.name) or ""),"HomigradFontGigantoNormous" ,scrW * 0.02 * viewLerp,scrH * 0.095, lply.role and lply.role.color or incoentCol, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 			draw.SimpleText( ( (lply.sub and lply.sub.name) or ""),"HomigradFontGigantoNormous" ,scrW * 0.02 * viewLerp,scrH * 0.15, lply.sub and lply.sub.color or incoentCol, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-			--[[local walkBtn = input.LookupBinding("+walk") or "BIND YOUR +WALK KEY PLEASE. WRITE \"bind alt +walk\" IN CONSOLE FOR THE LOVE OF GOD"
-			draw.SimpleText(walkBtn .. " | Misc", "HomigradFont", scrW * (0.981 + (0.04 * (1-viewLerp))),scrH * 0.9615, colBack, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
-			draw.SimpleText(walkBtn .. " | Misc", "HomigradFont", scrW * (0.98 + (0.04 * (1-viewLerp))),scrH * 0.96, colWhite, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)]]
 		end
 	end
 end

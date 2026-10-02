@@ -51,7 +51,11 @@ local scrW, scrH = ScrW(), ScrH()
 
 local AcsentColor = Color(155,0,0)
 local gradient_u = Material("vgui/gradient-d")
-
+local blacklist = {
+    ["weapon_hands_sh"] = true,
+    ["weapon_hg_coolhands"] = true,
+    ["weapon_hidebox"] = true
+}
 function WS.WeaponSelectorDraw( ply )
     if not IsValid( ply ) or not ply:Alive() or GetGlobalBool("RadialInventory", false) then return end
     if WS.Show < CurTime() then 

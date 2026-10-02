@@ -962,16 +962,16 @@ local vecalmostzero = Vector(0.01, 0.01, 0.01)
 
 local modelPlacements = {
 	[1] = {
-		["ValveBiped.Bip01_L_Calf"] = {Vector(13, -0.15, 0), Angle(90, 0, 0)},
-		["ValveBiped.Bip01_R_Calf"] = {Vector(13, -0.15, 0), Angle(90, 0, 0)},
-		["ValveBiped.Bip01_R_Forearm"] = {Vector(8.9, 0.5, 0.5), Angle(90, 0, 0)},
-		["ValveBiped.Bip01_L_Forearm"] = {Vector(8.9, 0.5, -0.5), Angle(90, 0, 0)},
+		["ValveBiped.Bip01_L_Calf"] = {Vector(9, 0, 0.5), Angle(90, -5, 0),Vector(0.8, 1, 1.5)},
+		["ValveBiped.Bip01_R_Calf"] = {Vector(9, 0, 1), Angle(90, -5, 0),Vector(0.8, 1, 1.5)},
+		["ValveBiped.Bip01_R_Forearm"] = {Vector(5.45, 0.35, 0.8), Angle(90, 0, 0),Vector(0.8, 1, 2)},
+		["ValveBiped.Bip01_L_Forearm"] = {Vector(5.45, 0.35, -0.8), Angle(90, 0, 0),Vector(0.8, 1, 2)},
 	},
 	[0] = {
-		["ValveBiped.Bip01_L_Calf"] = {Vector(15, -0.35, 0), Angle(90, 0, 0)},
-		["ValveBiped.Bip01_R_Calf"] = {Vector(15, -0.35, 0), Angle(90, 0, 0)},
-		["ValveBiped.Bip01_R_Forearm"] = {Vector(9, 0, 0.8), Angle(90, 0, 0)},
-		["ValveBiped.Bip01_L_Forearm"] = {Vector(9, 0, -0.8), Angle(90, 0, 0)},
+		["ValveBiped.Bip01_L_Calf"] = {Vector(10, 0.10, 0.5), Angle(90, -4.5, -1),Vector(0.8, 1, 1.6)},
+		["ValveBiped.Bip01_R_Calf"] = {Vector(10, -0.40, 1), Angle(90, 4.5, 1),Vector(0.8, 1, 1.6)},
+		["ValveBiped.Bip01_R_Forearm"] = {Vector(5.6, 0, 0.8), Angle(90, 0, 0),Vector(1, 1.1, 2)},
+		["ValveBiped.Bip01_L_Forearm"] = {Vector(5.6, -0.1, -0.8), Angle(90, 1.5, 0),Vector(1, 1.1, 2)},
 	}
 }
 
@@ -999,7 +999,13 @@ for k, v in pairs(limbs) do
 end
 
 local vecFull = Vector(1, 1, 1)
-
+local caps = {
+	["ValveBiped.Bip01_R_Calf"] = {"models/mosi/fnv/props/character/legcap01.mdl"},
+	["ValveBiped.Bip01_L_Calf"] = {"models/mosi/fnv/props/character/legcap01.mdl"},
+	["ValveBiped.Bip01_R_Forearm"] = {"models/mosi/fnv/props/character/armcap.mdl"},
+	["ValveBiped.Bip01_L_Forearm"] = {"models/mosi/fnv/props/character/armcap.mdl"},
+}
+local capcache = {}
 function hg.GoreCalc(ent, ply)
 	local org = ent.new_organism or ent.organism
 	if !org then return end
@@ -1016,10 +1022,7 @@ function hg.GoreCalc(ent, ply)
 		end
 		
 		local bon = ent:LookupBone(nam)
-		local legs = {
-			["ValveBiped.Bip01_R_Calf"] = true,
-			["ValveBiped.Bip01_L_Calf"] = true
-		}
+		
 		local mat = ent:GetBoneMatrix(bon)
 		local mat2 = ent:GetBoneMatrix(bon - 1)
 		mat:SetScale(vecalmostzero)
@@ -1035,16 +1038,21 @@ function hg.GoreCalc(ent, ply)
 		if !modelPlacements[fem][nam] then continue end
 
 		local pos, ang = LocalToWorld(modelPlacements[fem][nam][1], modelPlacements[fem][nam][2], mat2:GetTranslation(), mat2:GetAngles())
-		if !IsValid(headboom_mdl) then
-			headboom_mdl = ClientsideModel("models/mosi/fnv/props/character/armcap.mdl")
-			headboom_mdl:SetModelScale(1)
-			headboom_mdl:SetNoDraw(true)
+		local cachekey = fem .. "_" .. bon
+		if not IsValid(capcache[cachekey]) then
+    		local size = modelPlacements[fem][nam][3]
+   			local modelg = ClientsideModel(caps[nam][1])
+    		local mat = Matrix()
+    		mat:Scale(size)
+   			modelg:EnableMatrix("RenderMultiply", mat)
+    		modelg:SetNoDraw(true)
+    		capcache[cachekey] = modelg
 		end
-		
-		headboom_mdl:SetRenderOrigin(pos)
-		headboom_mdl:SetRenderAngles(ang)
-		headboom_mdl:SetupBones()
-		headboom_mdl:DrawModel()
+		local m = capcache[cachekey]
+		m:SetRenderOrigin(pos)
+		m:SetRenderAngles(ang)
+		m:SetupBones()
+		m:DrawModel()
 	end
 end
 

@@ -29,7 +29,7 @@ function PANEL:Init()
         end
     end)
 end
-
+local conv = ConVarExists("hg_bars") and GetConVar("hg_bars") or CreateClientConVar("hg_bars", "0", true, false, "Toggle bars in hud", 0, 1)
 function PANEL:Paint(w,h)
     draw.RoundedBox(0,0,0,w,h,self.ColorBG)
     hg.DrawBlur(self, self.BlurStrengh)
@@ -39,13 +39,14 @@ function PANEL:Paint(w,h)
         surface.DrawOutlinedRect(0,0,w,h,1.5)
     end
     surface.SetDrawColor(107, 107, 107,20)
+    if conv:GetBool() == true then
+        for i = 1, (ybars + 1) do
+            surface.DrawRect((sw / ybars) * i - (CurTime() * 10 % (sw / ybars)), 0, ScreenScale(0.5), sh)
+        end
 
-    for i = 1, (ybars + 1) do
-        surface.DrawRect((sw / ybars) * i - (CurTime() * 10 % (sw / ybars)), 0, ScreenScale(0.5), sh)
-    end
-
-    for i = 1, (xbars + 1) do
-        surface.DrawRect(0, (sh / xbars) * (i - 1) + (CurTime() * 10 % (sh / xbars)), sw, ScreenScale(0.5))
+        for i = 1, (xbars + 1) do
+            surface.DrawRect(0, (sh / xbars) * (i - 1) + (CurTime() * 10 % (sh / xbars)), sw, ScreenScale(0.5))
+        end
     end
 end
 

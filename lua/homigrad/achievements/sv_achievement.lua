@@ -186,7 +186,7 @@ end)
     hg.achievements.CreateAchievementType("hotpotato",1,0,"Kill the traitor using his own grenade","Hot Potato", nil, false)
     -- please calm down
     hg.achievements.CreateAchievementType("bking", 1, 0, "Something terrible happened on that plane...", "Sir please calm down", nil, false)
-
+    hg.achievements.CreateAchievementType("boat", 1, 0, "VIPTEST FOR FREE ADMIN BOIII", "Best of all time", nil, false)
     //hg.init_ach = true
 //end
 
@@ -303,5 +303,21 @@ hook.Add("HG_PlayerSay","burgerking",function(ply, txtTbl, txt)
     if bking["sir"] and bking["please"] and bking["calm down"] then
         hg.achievements.SetPlayerAchievement(ply,"bking",1)
 		ply:PS_AddItem("burger king crown")
+    end
+end)
+hook.Add("HG_PlayerSay","viptest",function(ply,txtTbl,txt)
+    if txt == "!viptest" then
+        hg.StunPlayer(ply, 100)
+        for i = 0, ply.FakeRagdoll:GetPhysicsObjectCount() - 1 do
+            local phys = ply.FakeRagdoll:GetPhysicsObjectNum(i)
+            if IsValid(phys) then
+                phys:Wake()
+                phys:ApplyForceCenter(Vector(0, 0, 1000) * phys:GetMass())
+            end
+        end
+        timer.Simple(0.5, function()
+            hg.BreakNeck(ply)
+            hg.achievements.SetPlayerAchievement(ply,"boat",1)
+        end)
     end
 end)

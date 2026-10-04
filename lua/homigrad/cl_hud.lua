@@ -389,7 +389,9 @@ local function CreateRadialMenu(options_arg, bAutoClose)
 			local col = lply:GetPlayerColor():ToColor()
 			draw.SimpleText(lply:GetPlayerName(),"HomigradFontGigantoNormous",scrW * 0.02 * viewLerp,scrH * 0.04, col, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 			draw.SimpleText( ( (lply.role and lply.role.name) or ""),"HomigradFontGigantoNormous" ,scrW * 0.02 * viewLerp,scrH * 0.095, lply.role and lply.role.color or incoentCol, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-			draw.SimpleText( ( (lply.sub and lply.sub.name) or ""),"HomigradFontGigantoNormous" ,scrW * 0.02 * viewLerp,scrH * 0.15, lply.sub and lply.sub.color or incoentCol, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+			local walkBtn = input.LookupBinding("+walk") or "BIND YOUR +WALK KEY PLEASE. WRITE \"bind alt +walk\" IN CONSOLE FOR THE LOVE OF GOD"
+			draw.SimpleText(walkBtn .. " | Misc", "HomigradFont", scrW * (0.981 + (0.04 * (1-viewLerp))),scrH * 0.9615, colBack, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+			draw.SimpleText(walkBtn .. " | Misc", "HomigradFont", scrW * (0.98 + (0.04 * (1-viewLerp))),scrH * 0.96, colWhite, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
 		end
 	end
 end
@@ -551,10 +553,6 @@ local randomGestures = {
 	{"thumb_up", function() RunConsoleCommand("hg_hand_gesture" , "thumb_up") end},
 	--{"visordown", function() RunConsoleCommand("hg_hand_gesture" , "visordown") end},
 }
-
-concommand.Add("hg_randomgesture",function()
-	randomGesture()
-end)
 
 hook.Add("radialOptions", "7", function()
     local ply = LocalPlayer()

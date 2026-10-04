@@ -433,7 +433,7 @@ end)
 util.AddNetworkString( "DoPlayerFlinch" )
 
 hook.Add( "ScalePlayerDamage", "FlinchPlayersOnHit", function(ply, grp)
-	if ply:IsPlayer() then
+	if IsValid(ply) and ply:Alive() then
 		--could maybe return end,
 		--but would that override other Scale hooks? -- no.
 		local group = nil
@@ -1085,6 +1085,10 @@ hook.Add( "Move", "hg_RagdollIntoWalls", function( ply, mv)
 end)
 
 if util.IsBinaryModuleInstalled("eightbit") then
+	if system.IsLinux() then
+		print("If the eightbit module doesn't work, you should update the 32-bit glibc library (and C/C++ related 32-bit libraries in general)")
+	end
+
 	require("eightbit")
 
 	if eightbit.SetDamp1 then

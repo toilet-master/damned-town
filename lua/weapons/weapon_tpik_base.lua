@@ -77,6 +77,13 @@ end
 SWEP.modelscale = 1
 SWEP.modelscale2 = 1
 if CLIENT then
+	function SWEP:PreDrawViewModel()
+		return true
+	end
+
+	function SWEP:ViewModelDrawn()
+		return false
+	end
 
     local vecPochtiZero = Vector(0.0001, 0.0001, 0.0001)
 
@@ -100,6 +107,12 @@ if CLIENT then
 
 	function SWEP:DrawWorldModel2()
 		local owner = self:GetOwner()
+
+		if (self.DrawPreWorldModel) then
+			if self:DrawPreWorldModel() == false then
+				return self:DrawPreWorldModel()
+			end
+		end
 
         if not IsValid(self.worldModel) then
             self.worldModel = ClientsideModel(self.WorldModel)
@@ -411,6 +424,10 @@ function SWEP:Deploy()
     self.Initialzed = true
     self:PlayAnim("deploy")
     self:SetHold(self.HoldType)
+
+	if self.DeployAdd then
+		self:DeployAdd()
+	end
 	
 	return true
 end

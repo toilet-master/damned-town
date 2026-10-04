@@ -57,7 +57,7 @@ local modetbl = {
                 newscroll:AddPanel(btn)
                 btn.Paint = function (self, w, h)
                     draw.RoundedBox(0, 0, 0, w, h, v.Color or Color(255,0,0) )
-                    draw.RoundedBox(0, 0, 25, w, h/2, v.colorb or Color(255,0,0) )
+                    draw.RoundedBox(0, 0, h/2, w, h/2, v.colorb or Color(255,0,0) )
                     surface.SetDrawColor(Color(0,0,0,255))
                     surface.DrawOutlinedRect(0,0,w,h,4)
                 end
@@ -68,8 +68,15 @@ local modetbl = {
                 end
                 
             end
-            local cont = vgui.Create("DPanel", subc)
-            --cont.Paint
+            
+            --[[local cont = vgui.Create("HMCD_RolePanelList", subc)
+            --cont:Dock(FILL)
+            cont:Center()
+            cont:SetSize(ScrW()/4,ScrH()/1.5)
+            cont.RolesIDsList = chosentype.Traitor or self.RolesIDsList
+            cont.Mode = "soe"
+            cont:Construct()
+            VGUI_HMCD_RolePanelList = cont]]
 
         end,
     },
@@ -82,6 +89,7 @@ local modetbl = {
 
         spawnfunc = function(pp)
             if ValidPanel(pp.SubMenu) then pp.SubMenu:Remove() end
+            
             menumusicrn("sound/criresps/cri_mainmenu.mp3")
         end,
     },
@@ -105,7 +113,7 @@ function hg.DrawLoadoutMenu(pp)
         btn:DockMargin(0, 10, 20, 0)
         btn.Paint = function (self, w, h)
             draw.RoundedBox(0, 0, 0, w, h, v.Color or Color(255,0,0) )
-            draw.RoundedBox(0, 0, 25, w, h/2, v.colorb or Color(255,0,0) )
+            draw.RoundedBox(0, 0, h/2, w, h/2, v.colorb or Color(255,0,0) )
             surface.SetDrawColor(Color(0,0,0,255))
             surface.DrawOutlinedRect(0,0,w,h,4)
         end

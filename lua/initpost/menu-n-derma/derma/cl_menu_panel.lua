@@ -3,7 +3,7 @@ local PANEL = {}
 local curent_panel
 DISCORD_URL = "https://discord.gg/475EmEdTgH"
 local text = {
-    "Type hg_hudcolor 255 255 255 or any other rgb color to change hud color",
+    "You can change hud color in settings",
     "Patched some stuff",
     "Press action menu to see your occupation in homicide",
     "Changelog button",

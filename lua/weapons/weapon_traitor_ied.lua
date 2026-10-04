@@ -526,7 +526,7 @@ function SWEP:Reload()
 	if (self.nextattackhuy) <= CurTime() and not self.Planted and not self.PlantedOnSelf then
 		self.nextattackhuy = CurTime() + 2
 		local Owner = self:GetOwner()
-		self.PlantedOnSelf = true
+		self.HaveTheBomb = Owner
 		self.WorldModel = "models/saraphines/insurgency explosives/ied/insurgency_ied_phone.mdl"
 		net.Start("ied_have_the_bomb")
 		net.WriteEntity(self)

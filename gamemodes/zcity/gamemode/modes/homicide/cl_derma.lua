@@ -190,9 +190,9 @@ function PANEL:Construct()
 	button_ready:SetText("APPLY")
 	button_ready.DoClick = function(sel)
 		//if(sel.Clicked)then
-			if(IsValid(VGUI_HMCD_RolePanelList))then
-				VGUI_HMCD_RolePanelList:Remove()
-			end
+			--if(IsValid(VGUI_HMCD_RolePanelList))then
+				--VGUI_HMCD_RolePanelList:Remove()
+			--end
 		//end
 		
 		//sel.Clicked = true

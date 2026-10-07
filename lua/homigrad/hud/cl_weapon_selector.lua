@@ -68,7 +68,6 @@ function WS.WeaponSelectorDraw( ply )
     local SelectedWep = WS.GetSelectedWeapon()
     if not IsValid(SelectedWep) then return end
     WS.Transparent = LerpFT( 0.2, WS.Transparent, math.min( WS.Show - CurTime(), 1 ) )
-    --draw.RoundedBox(0,(scrW / 2)-10,(scrH *0.15),20,20, color_red )
     local SuperAmmout = 0
     local AmmoutSlots = 0
     for i = 0, #Weapons do

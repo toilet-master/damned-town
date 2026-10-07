@@ -17,6 +17,7 @@ hg.TraitorLoot = {
 	["hg_flashlight"] = 1,
 }
 
+
 if SERVER then return end
 
 --\\ Loot menu, server side is in sv_inventory.lua
@@ -262,6 +263,7 @@ if SERVER then return end
 
                     function button:Paint(w, h)
                         local hovered = self:IsHovered()
+                        local hudcl = hg.hudcolor:colorchange()
                         self.col1 = Lerp(0.1, self.col1, hovered and 255 or 100)
 
                         if hovered then
@@ -271,7 +273,7 @@ if SERVER then return end
                             self.SoundKD = CurTime() + 0.1
                         end
 
-                        surface.SetDrawColor(self.col1, 0, 0, 15)
+                        surface.SetDrawColor(hudcl.r, hudcl.g, hudcl.b, 45)
                         surface.DrawRect(0, 0, w, h)
 
                         if Icon then
@@ -285,7 +287,7 @@ if SERVER then return end
                             surface.DrawTexturedRect(Quad and w / 5 + 5 or -5, 5, Quad and (w / 2 + 2.5) or (w + 10), Quad and h / 1.3 or h - 10)
                         end
 
-                        surface.SetDrawColor(self.col1, 0, 0, self.col1)
+                        surface.SetDrawColor(hudcl.r, hudcl.g, hudcl.b, self.col1)
                         surface.DrawOutlinedRect(0, 0, w, h, 1)
 
                         draw.DrawText(Text, "ZCity_VerySuperTiny", w / 2, h / TextDiv, color_white, TEXT_ALIGN_CENTER)

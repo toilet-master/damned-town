@@ -12,6 +12,16 @@ local modetypes = {
         Color = Color(10,0,155),
         colorb = Color(255,0,0),
         spawnfunc = function (pp)
+            if ValidPanel(pp.Submenu2) then pp.Submenu2:Remove() end
+            local cont = vgui.Create("HMCD_RolePanelList", pp)
+            cont.Mode = "soe"
+            pp.Submenu2 = cont
+            cont:Center()
+            cont:SetSize(ScrW()/1.75,ScrH()/1.25)
+            cont:SetPos(0,ScrH()/8.5)
+            cont.RolesIDsList = self.RolesIDsList
+            cont:Construct()
+            --VGUI_HMCD_RolePanelList = cont
         end,
     },
     ["std"] = { 
@@ -19,6 +29,16 @@ local modetypes = {
         Color = Color(10,0,155),
         colorb = Color(0,255,20),
         spawnfunc = function (pp)
+            if ValidPanel(pp.Submenu2) then pp.Submenu2:Remove() end
+            local cont = vgui.Create("HMCD_RolePanelList", pp)
+            pp.Submenu2 = cont
+            cont:Center()
+            cont:SetSize(ScrW()/1.75,ScrH()/1.25)
+            cont:SetPos(0,ScrH()/8.5)
+            cont.RolesIDsList = self.RolesIDsList
+            cont.Mode = "standard"
+            cont:Construct()
+            --VGUI_HMCD_RolePanelList = cont
         end,
     },
     ["gunner"] = { 
@@ -69,14 +89,7 @@ local modetbl = {
                 
             end
             
-            --[[local cont = vgui.Create("HMCD_RolePanelList", subc)
-            --cont:Dock(FILL)
-            cont:Center()
-            cont:SetSize(ScrW()/4,ScrH()/1.5)
-            cont.RolesIDsList = chosentype.Traitor or self.RolesIDsList
-            cont.Mode = "soe"
-            cont:Construct()
-            VGUI_HMCD_RolePanelList = cont]]
+            --[[]]
 
         end,
     },

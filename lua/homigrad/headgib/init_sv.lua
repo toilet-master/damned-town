@@ -62,13 +62,14 @@ function SpawnMeatGore(mainent, pos, count, force, scale, models)
 			ent:SetModel(v)
 			ent:SetPos(pos)
 			ent:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
-			ent:SetAngles(AngleRand(-180,180))
+			ent:SetAngles(AngleRand(-90,90))
 			ent:Activate()
 			ent:Spawn()
 			local phys = ent:GetPhysicsObject()
 			if IsValid(phys) then
 				phys:SetVelocity(mainent:GetVelocity() + VectorRand(-65,65) + force / 10)
 				phys:AddAngleVelocity(VectorRand(-65,65))
+
 			end
 			if zb.CROUND and zb.CROUND ~= "hmcd" or gamemod == "sandbox" then
 				ent:DrawShadow(false)

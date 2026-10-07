@@ -20,16 +20,16 @@ hg.bonetohitgroup = {
 }
 
 hg.amputeetable = {
-	--["ValveBiped.Bip01_L_UpperArm"] = "larm",
+	["ValveBiped.Bip01_L_UpperArm"] = "larm",
 	["ValveBiped.Bip01_L_Forearm"] = "larm",
 	["ValveBiped.Bip01_L_Hand"] = "larm",
-	--["ValveBiped.Bip01_R_UpperArm"] = "rarm",
+	["ValveBiped.Bip01_R_UpperArm"] = "rarm",
 	["ValveBiped.Bip01_R_Forearm"] = "rarm",
 	["ValveBiped.Bip01_R_Hand"] = "rarm",
-	--["ValveBiped.Bip01_L_Thigh"] = "lleg",
+	["ValveBiped.Bip01_L_Thigh"] = "lleg",
 	["ValveBiped.Bip01_L_Calf"] = "lleg",
 	["ValveBiped.Bip01_L_Foot"] = "lleg",
-	--["ValveBiped.Bip01_R_Thigh"] = "rleg",
+	["ValveBiped.Bip01_R_Thigh"] = "rleg",
 	["ValveBiped.Bip01_R_Calf"] = "rleg",
 	["ValveBiped.Bip01_R_Foot"] = "rleg"
 }
@@ -968,8 +968,8 @@ local modelPlacements = {
 		["ValveBiped.Bip01_L_Forearm"] = {Vector(5.45, 0.35, -0.8), Angle(90, 0, 0),Vector(0.8, 1, 2)},
 	},
 	[0] = {
-		["ValveBiped.Bip01_L_Calf"] = {Vector(10, 0.10, 0.5), Angle(90, -4.5, -1),Vector(0.8, 1, 1.6)},
-		["ValveBiped.Bip01_R_Calf"] = {Vector(10, -0.40, 1), Angle(90, 4.5, 1),Vector(0.8, 1, 1.6)},
+		["ValveBiped.Bip01_L_Calf"] = {Vector(10, 0.10, 0.5), Angle(90, -4.5, -1),Vector(1, 1, 1.8)},
+		["ValveBiped.Bip01_R_Calf"] = {Vector(10, -0.40, 1), Angle(90, 4.5, 1),Vector(1, 1, 1.8)},
 		["ValveBiped.Bip01_R_Forearm"] = {Vector(5.6, 0, 0.8), Angle(90, 0, 0),Vector(1, 1.1, 2)},
 		["ValveBiped.Bip01_L_Forearm"] = {Vector(5.6, -0.1, -0.8), Angle(90, 1.5, 0),Vector(1, 1.1, 2)},
 	}
@@ -982,6 +982,7 @@ local limbs = {
 	["rarm"] = "ValveBiped.Bip01_R_Forearm",
 	["head"] = "ValveBiped.Bip01_Head1"
 }
+
 
 function hg.amputatedbone(ent, bone)
 	if ent.organism and hg.amputatedlimbs2[bone] then
@@ -1006,6 +1007,7 @@ local caps = {
 	["ValveBiped.Bip01_L_Forearm"] = {"models/mosi/fnv/props/character/armcap.mdl"},
 }
 local capcache = {}
+
 function hg.GoreCalc(ent, ply)
 	local org = ent.new_organism or ent.organism
 	if !org then return end

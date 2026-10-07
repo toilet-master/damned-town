@@ -510,11 +510,7 @@ if SERVER then
 		end
 
 		if (self.nextattackhuy or 0) <= CurTime() and (self.Planted or self.HaveTheBomb or self.PlantedOnSelf) and not self.KABOOM then
-			if self.PlantedOnSelf then
-				ExplodeTheItem(self, self:GetOwner())
-			else
-				ExplodeTheItem(self, self.HaveTheBomb)
-			end
+			ExplodeTheItem(self, self.HaveTheBomb)
 			self:EmitSound("keypad"..math.random(1,3)..".mp3",55)
 			self.HaveTheBomb = nil
 		end
@@ -523,7 +519,7 @@ if SERVER then
 
 function SWEP:Reload()
 	
-	if (self.nextattackhuy) <= CurTime() and not self.Planted and not self.PlantedOnSelf then
+	if (self.nextattackhuy) <= CurTime() and not self.Planted then
 		self.nextattackhuy = CurTime() + 2
 		local Owner = self:GetOwner()
 		self.HaveTheBomb = Owner
@@ -534,8 +530,9 @@ function SWEP:Reload()
 		net.Broadcast()
 		Owner:EmitSound("snd_jack_hmcd_bombrig.wav",50,100,1,CHAN_AUTO)
 		self.Planted = true
+		self.PlantedOnSelf = true
 		self:SetNextPrimaryFire(CurTime() + 2)
-		elseif (self.nextattackhuy) <= CurTime() then
+		elseif (self.nextattackhuy) <= CurTime() and self.PlantedOnSelf then
 			self.nextattackhuy = CurTime() + 2
 			self:TakeBack()
 		end

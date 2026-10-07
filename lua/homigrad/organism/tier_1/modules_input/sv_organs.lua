@@ -102,7 +102,6 @@ input_list.brain = function(org, bone, dmg, dmgInfo)
 		if !ent.organism.SpawnedBrainChunks and math.random(5) == 1 then
 			SpawnMeatGore(ent, dmgPos + dirCool * 5, 3, dirCool * 1000, 0.4)
 			ent.organism.SpawnedBrainChunks = true
-			ent.organism.canstiffen = false
 		end
 	end
 

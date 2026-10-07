@@ -108,16 +108,16 @@ local hitgrouptolimb = {
 hg.bonetohitgroup = bonetohitgroup
 
 hg.amputeetable = {
-	--["ValveBiped.Bip01_L_UpperArm"] = "larm",
+	["ValveBiped.Bip01_L_UpperArm"] = "larm",
 	["ValveBiped.Bip01_L_Forearm"] = "larm",
 	["ValveBiped.Bip01_L_Hand"] = "larm",
-	--["ValveBiped.Bip01_R_UpperArm"] = "rarm",
+	["ValveBiped.Bip01_R_UpperArm"] = "rarm",
 	["ValveBiped.Bip01_R_Forearm"] = "rarm",
 	["ValveBiped.Bip01_R_Hand"] = "rarm",
-	--["ValveBiped.Bip01_L_Thigh"] = "lleg",
+	["ValveBiped.Bip01_L_Thigh"] = "lleg",
 	["ValveBiped.Bip01_L_Calf"] = "lleg",
 	["ValveBiped.Bip01_L_Foot"] = "lleg",
-	--["ValveBiped.Bip01_R_Thigh"] = "rleg",
+	["ValveBiped.Bip01_R_Thigh"] = "rleg",
 	["ValveBiped.Bip01_R_Calf"] = "rleg",
 	["ValveBiped.Bip01_R_Foot"] = "rleg"
 }
@@ -148,6 +148,7 @@ end
 local limbs = {
 	["lleg"] = "ValveBiped.Bip01_L_Calf",
 	["rleg"] = "ValveBiped.Bip01_R_Calf",
+	--["rleg"] = "ValveBiped.Bip01_R_Foot",
 	["larm"] = "ValveBiped.Bip01_L_Forearm",
 	["rarm"] = "ValveBiped.Bip01_R_Forearm",
 }
@@ -184,13 +185,28 @@ local function raggib(ent, targetBoneName)
     local limbRagdoll = ents.Create("prop_ragdoll")
     if not IsValid(limbRagdoll) then return end
     limbRagdoll:SetModel(ent:GetModel())
+	ApplyAppearanceRagdoll(limbRagdoll, ent)
     limbRagdoll:SetPos(ent:GetPos())
     limbRagdoll:SetAngles(ent:GetAngles())
     limbRagdoll:SetSkin(ent:GetSkin())
+	limbRagdoll:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
     for k, v in pairs(ent:GetBodyGroups()) do
         limbRagdoll:SetBodygroup(v.id, ent:GetBodygroup(v.id))
     end
+	local mats = ent:GetMaterials()
+	if mats then
+		for i = 0, #mats - 1 do
+			local sm = ent:GetSubMaterial(i)
+			if sm and sm ~= "" then limbRagdoll:SetSubMaterial(i, sm) end
+		end
+	end
     limbRagdoll:Spawn()
+	limbRagdoll:Activate()
+	limbRagdoll:SetColor(ent:GetColor())
+	limbRagdoll:SetMaterial(ent:GetMaterial())
+	limbRagdoll:AddEFlags(EFL_DONTBLOCKLOS)
+	limbRagdoll:SetNWBool("SeveredLimb",true)
+	limbRagdoll:SetNWString("SeveredLimb", limb)
     for i = 0, limbRagdoll:GetPhysicsObjectCount() - 1 do
         local physLimb = limbRagdoll:GetPhysicsObjectNum(i)
         local physMain = ent:GetPhysicsObjectNum(i)
@@ -203,20 +219,37 @@ local function raggib(ent, targetBoneName)
     for i = 0, limbRagdoll:GetBoneCount() - 1 do
         if i ~= targetBoneID and not IsChildOfBone(limbRagdoll, i, targetBoneID) then
             limbRagdoll:ManipulateBoneScale(i, Vector(0, 0, 0))
+			limbRagdoll:ManipulateBonePosition(i, Vector(0, 0, 0))
+			limbRagdoll:DrawShadow(false)
             local physBone = limbRagdoll:TranslateBoneToPhysBone(i)
             local physObj = limbRagdoll:GetPhysicsObjectNum(physBone)
             if IsValid(physObj) then
-                physObj:EnableCollisions(false)
+				local matrix = ent:GetBoneMatrix(targetBoneID)
+				if matrix then
+    				local pos = matrix:GetTranslation()
+    				local ang = matrix:GetAngles()
+					physObj:SetPos(pos)
+					physObj:SetAngles(ang)
+				end
+                --physObj:EnableCollisions(false)
+				--physObj:EnableMotion(false)
+				--physObj:EnableGravity(false)
                 physObj:SetMass(0.1)
             end
+			
         end
+		local physObj = limbRagdoll:GetPhysicsObjectNum(targetBoneID)
+		if physObj then
+			physObj:EnableCollisions(false)
+			physObj:SetMass(2)
+		end
     end
-	ApplyAppearanceRagdoll(limbRagdoll, ent)
+	local col = ent:GetNWVector("PlayerColor", Vector(1, 1, 1))
+	limbRagdoll:SetNWVector("PlayerColor", col)
 	limbRagdoll:SetNetVar("Accessories", "")
 	limbRagdoll:SetNWString("PlayerName", "Severed limb")
-	limbRagdoll:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
 end
-function hg.organism.AmputateLimb(org, limb,dmgtype)
+function hg.organism.AmputateLimb(org, limb, dmgtype)
 	if org[limb.."amputated"] == nil then return end
 
 	local bone = limbs[limb]
@@ -252,6 +285,7 @@ function hg.organism.AmputateLimb(org, limb,dmgtype)
 	local ent = hg.GetCurrentCharacter(org.owner)
 	--print(bone)
 	SpawnMeatGore(ent, select(1, ent:GetBonePosition(ent:LookupBone(bone))), 1,	Vector(0,0,0) , 1,meatyshit[bone])
+	--raggib(ent, bone)
 	--[[if IsValid(dmgtype) and (((dmgtype == DMG_BUCKSHOT or dmgtype == DMG_BLAST) and math.random(1, 2) == 1) or (dmgtype == DMG_SLASH)) then
 		local targetEnt = IsValid(ent) and ent or org.owner
 		raggib(org.owner, bone)

@@ -317,11 +317,17 @@ function hg.CreateButton(buttonData, convarName, ParentPanel, yPos)
         end
     elseif convarType == 'color' then
         local clrthing = vgui.Create("DButton",pppanel)
+        local str = convar:GetString()
+        local parts = string.Explode(" ", str)
+        local r = tonumber(parts[1]) or 255
+        local g = tonumber(parts[2]) or 255
+        local b = tonumber(parts[3]) or 255
+        local color = Color(r, g, b) or Color(255,255,255)
         clrthing:SetSize(pppanel:GetWide()/32, pppanel:GetTall()/2)
         clrthing:SetText("")
         clrthing:SetPos(pppanel:GetWide()-pppanel:GetWide()/8-20, pppanel:GetTall()/2-clrthing:GetTall()/2)
         clrthing.Paint = function(self, w, h)
-            surface.SetDrawColor(hg.hudcolor:colorchange())
+            surface.SetDrawColor(color)
             surface.DrawRect(0, 0, w, h)
             surface.SetDrawColor(110, 110, 110, 255)
             surface.DrawOutlinedRect(0, 0, w, h)
@@ -333,7 +339,7 @@ function hg.CreateButton(buttonData, convarName, ParentPanel, yPos)
             colorWindow:SetSize(ScrW()/4, ScrH()/2)
             colorWindow:Center()
             colorWindow:SetPos(pppanel:GetWide()-pppanel:GetWide()/8-20, pppanel:GetTall()/2-clrthing:GetTall()/4)
-            colorWindow:SetTitle("Hud color picker")
+            colorWindow:SetTitle("Color picker")
             colorWindow:MakePopup()
             ParentPanel.OnRemove = function()
                 if IsValid(colorWindow) then
@@ -341,12 +347,10 @@ function hg.CreateButton(buttonData, convarName, ParentPanel, yPos)
                 end
             end
             mixer = vgui.Create("DColorMixer",colorWindow)
-            mixer:SetColor(hg.hudcolor:colorchange())
+            mixer:SetColor(color)
             mixer:SetPalette(true)
-            --mixer:Dock(FILL)
             mixer:SetAlphaBar(false)
             mixer:SetWangs(true)
-            --mixer:Dock(FILL)
             mixer:Center()
             mixer:SetTall(colorWindow:GetTall()/1.65) 	
             local apply = vgui.Create("DButton",colorWindow)
@@ -358,13 +362,24 @@ function hg.CreateButton(buttonData, convarName, ParentPanel, yPos)
                 surface.DrawRect(0, 0, w, h)
                 draw.SimpleText("Apply","HomigradFontMedium",w/2.25,0,Color(255,255,255))
             end
+            function mixer:ValueChanged(col)
+                if IsValid(colorWindow) then
+                    local hmm = Color(
+                    col.r - 125,
+	                col.g - 125,
+	                col.b - 125, 200)
+                    colorWindow:SetColorBG(hmm )
+                    colorWindow:SetColorBR(col)
+                end
+            end
             function apply:PaintOver(w,h)
                 surface.SetDrawColor(Color(54,54,54,220))
                 surface.DrawOutlinedRect(0, 0, w, h, 2.5)
             end
             apply.DoClick = function()
                 local color = mixer:GetColor()
-                RunConsoleCommand("hg_hudcolor", string.format("%d %d %d", color.r, color.g, color.b))
+                local format = string.format("%d %d %d", color.r, color.g, color.b)
+                SetConVarValue(convar, format)
             end
 
         end

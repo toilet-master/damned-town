@@ -167,8 +167,8 @@ CreateEndMenu = function()
 		local lengthX, lengthY = surface.GetTextSize("Players:")
 		surface.SetTextPos(w / 2 - lengthX/2,20)
 		surface.DrawText("Players:")
-
-		surface.SetDrawColor( 255, 0, 0, 128)
+		local clr = lply:Team() == 0 and Color(255, 0, 0, 128) or Color(35, 0, 255, 128)
+		surface.SetDrawColor( clr)
         surface.DrawOutlinedRect( 0, 0, w, h, 2.5 )
 	end
 	-- PLAYERS
@@ -177,8 +177,8 @@ CreateEndMenu = function()
 	DScrollPanel:SetSize(sizeX - 20, sizeY - 90)
 	function DScrollPanel:Paint( w, h )
 		BlurBackground(self)
-
-		surface.SetDrawColor( 255, 0, 0, 128)
+		local clr = lply:Team() == 0 and Color(255, 0, 0, 128) or Color(35, 0, 255, 128)
+		surface.SetDrawColor(clr)
         surface.DrawOutlinedRect( 0, 0, w, h, 2.5 )
 	end
 
@@ -272,18 +272,18 @@ surface.CreateFont("ZB_TDM_DESCSMALL", {
     weight = 400,
     antialias = true
 })
-
 local function PaintFrame(self,w,h)
 	BlurBackground(self)
-
-	surface.SetDrawColor( 255, 0, 0, 128)
+	local clr = lply:Team() == 0 and Color(255, 0, 0, 128) or Color(35, 0, 255, 128)
+	surface.SetDrawColor(clr)
     surface.DrawOutlinedRect( 0, 0, w, h, 2.5 )
 end
 
 local function PaintPanel(self,w,h)
 	surface.SetDrawColor( 0, 0, 0,155)
     surface.DrawRect( 0, 0, w, h, 2.5 )
-	surface.SetDrawColor( 255, 0, 0, 128)
+	local clr = lply:Team() == 0 and Color(255, 0, 0, 128) or Color(35, 0, 255, 128)
+	surface.SetDrawColor( clr)
     surface.DrawOutlinedRect( 0, 0, w, h, 2.5 )
 end
 
@@ -292,10 +292,12 @@ local gradient_l = Material("vgui/gradient-l")
 local function PaintPanel1(self,w,h)
 	surface.SetDrawColor( 0, 0, 0,155)
     surface.DrawRect( 0, 0, w, h, 2.5 )
-	surface.SetDrawColor( 255, 0, 0, 128)
+	local clr = lply:Team() == 0 and Color(255, 0, 0, 128) or Color(35, 0, 255, 128)
+	local clr2 = lply:Team() == 0 and Color(155, 0, 0, 55) or Color(10, 0, 70, 128)
+	surface.SetDrawColor( clr)
     surface.DrawOutlinedRect( 0, 0, w, h, 2.5 )
 	draw.RoundedBox( 0, 2.5, 2.5, w-5, h-5, Color( 0, 0, 0, 140) )
-    surface.SetDrawColor(155, 0, 0, 55)
+    surface.SetDrawColor(clr2)
     surface.SetMaterial(gradient_l)
     surface.DrawTexturedRect( 0, 0, w/1.5, h )
 end
@@ -339,9 +341,11 @@ local function OpenBuyMenu()
 	Frame:SetSize(ScrW() * 0.35,ScrH() * 0.85)
 	Frame:Center()
 	Frame:MakePopup()
-	Frame:SetTitle("Buy menu")
-	Frame.Paint = PaintFrame
-	
+	Frame:SetTitle("")
+	Frame.Paint = function(self,w,h)
+		draw.SimpleText("Buy menu", "HomigradFontBig",w/2.4,h/200)
+		PaintFrame(self,w,h)
+	end
 	local Sheet = vgui.Create( "DPropertySheet", Frame )
 	Sheet:Dock( FILL )
 	Sheet:SetTextInset(50)

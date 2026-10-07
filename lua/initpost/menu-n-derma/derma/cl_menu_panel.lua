@@ -54,7 +54,7 @@ local Selects = {
     {Title = "Main Menu", Func = function(luaMenu) gui.ActivateGameUI() luaMenu:Close() end},
     {Title = "Discord", Func = function(luaMenu) luaMenu:Close() gui.OpenURL(DISCORD_URL)  end},
     {Title = "Pick Role",
-    GamemodeOnly = false,     
+    GamemodeOnly = true,     
     Func = function(luaMenu, pp)
         hg.DrawLoadoutMenu(pp)
     end,

@@ -377,6 +377,18 @@ hg.Accessories = {
         bonemerge = true,
         name = "Phoenix Balaclava"
     },
+    ["dunce"] = {
+        model = "models/distac/dumb.mdl",
+        bone = "ValveBiped.Bip01_Head1",
+        malepos = {Vector(11,1,0),Angle(0,100,90),1},
+        fempos = {Vector(10,0,0),Angle(0,100,90),1},
+        skin = 0,
+        bSetColor = true,
+        norender = true,
+        disallowinappearance = true,
+        placement = "head",
+        name = "Dunce cap"
+    },
    	--[[
 	["hood_balaclava"] = {
         model = "models/balaclava_hood/balaclava_hood.mdl",
@@ -642,6 +654,7 @@ hg.Accessories = {
         price = 1000,
         name = "Striped Beanie"
     },
+    
     ["periwinkle beanie"] = {
         model = "models/modified/hat03.mdl",
         bone = "ValveBiped.Bip01_Head1",

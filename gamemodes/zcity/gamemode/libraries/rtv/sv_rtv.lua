@@ -301,33 +301,14 @@ function zb.StartRTV(time)
     getmaps()
 
     rtvtime = CurTime() + (time or 45)
-
-    local PlayedMaps = {}
-    local playedMapsPath = GetDataPath("PlayedMaps.json")
-    if file.Exists(playedMapsPath, "DATA") then
-        PlayedMaps = util.JSONToTable(file.Read(playedMapsPath, "DATA"))
-    end
-    if not PlayedMaps then
-        PlayedMaps = {}
-    end
-
-    --;; Сначала попытаемся выбрать 3 "уникальных" префикса 
-    --;; через взвешенный рандом. В каждом должно быть >=4 карт, 
-    --;; которые НЕ в PlayedMaps.
-    local selectedPrefixes = getUniquePrefixes(PlayedMaps)
+    local selectedPrefixes = getUniquePrefixes({})
 
     if #selectedPrefixes < 3 then
         local possible = {}
         for prefix, weight in pairs(prefixWeights) do
             if weight > 0 then
                 local prefixMaps = getMapsByPrefix(prefix)
-                local validCount = 0
-                for _, m in ipairs(prefixMaps) do
-                    if not table.HasValue(PlayedMaps, m) then
-                        validCount = validCount + 1
-                    end
-                end
-                if validCount >= 4 then
+                if #prefixMaps >= 4 then
                     table.insert(possible, prefix)
                 end
             end
@@ -348,13 +329,8 @@ function zb.StartRTV(time)
 
     local finalmaps = {}
     for _, prefix in ipairs(selectedPrefixes) do
-        local prefixMaps = getMapsByPrefix(prefix)
-        local validMaps = {}
-        for _, m in ipairs(prefixMaps) do
-            if not table.HasValue(PlayedMaps, m) then
-                table.insert(validMaps, m)
-            end
-        end
+        local validMaps = table.Copy(getMapsByPrefix(prefix))
+        
         for i = 1, 4 do
             if #validMaps == 0 then break end
 
@@ -384,13 +360,7 @@ function zb.StartRTV(time)
 
     if #finalmaps < 12 then
         local fallbackPrefix = "gm"
-        local fallbackMaps = getMapsByPrefix(fallbackPrefix)
-        local filteredFallback = {}
-        for _, m in ipairs(fallbackMaps) do
-            if not table.HasValue(PlayedMaps, m) then
-                table.insert(filteredFallback, m)
-            end
-        end
+        local filteredFallback = table.Copy(getMapsByPrefix(fallbackPrefix))
 
         local attempts = 0
         while #finalmaps < 12 and #filteredFallback > 0 do
@@ -436,7 +406,6 @@ function zb.StartRTV(time)
     net.Broadcast()
 
     zb.votestarted = true
-
 
     hook.Add("Think", "RTVThink", zb.ThinkRTV)
 end

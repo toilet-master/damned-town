@@ -109,14 +109,14 @@ function PANEL:InitializeMarkup()
 	local gm = splasheh[math.random(#splasheh)] .. " | " .. string.NiceName(mapname) 
 
     if hg.PluvTown.Active then
-        local text = "<font=ZC_MM_Title><colour="..hg.hudcolor:colorstring()..">    </colour>Town</font>\n<font=ZCity_Tiny><colour=255,255,255>" .. gm .. "</colour></font>"
+        local text = "<font=ZC_MM_Title><colour="..hg.hudcolor:colorstring(false)..">    </colour>Town</font>\n<font=ZCity_Tiny><colour=255,255,255>" .. gm .. "</colour></font>"
 
         self.SelectedPluv = table.Random(hg.PluvTown.PluvMats)
 
         return markup.Parse(text)
     end
 
-    local text = "<font=ZC_MM_Title><colour="..hg.hudcolor:colorstring()..">Damned</colour>-Town</font>\n<font=ZCity_Tiny><colour=255,255,255>" .. gm .. "</colour></font>"
+    local text = "<font=ZC_MM_Title><colour="..hg.hudcolor:colorstring(false)..">Damned</colour>-Town</font>\n<font=ZCity_Tiny><colour=255,255,255>" .. gm .. "</colour></font>"
     return markup.Parse(text)
 end
 
@@ -133,7 +133,7 @@ local app = {
     look_ang = Angle(-15, 180, 0),
 }
 
-local function MenuUnit(num)
+function UnitHud(num)
     return math.floor(num * math.min(ScrW(), ScrH()) / 1000)
 end
 function GetPreviewAppearance(skibididumdum)
@@ -154,10 +154,10 @@ function appearanceappear(pp)
     if hg.Appearance and hg.Appearance.PrecacheModels then
        	hg.Appearance.PrecacheModels()
     end
-	local holderW = MenuUnit(app.width)
-	local holderH = MenuUnit(app.height)
-    local targetX = ScrW() - holderW - MenuUnit(app.right)
-    local targetY = MenuUnit(app.top)
+	local holderW = UnitHud(app.width)
+	local holderH = UnitHud(app.height)
+    local targetX = ScrW() - holderW - UnitHud(app.right)
+    local targetY = UnitHud(app.top)
 	pp.hholder = vgui.Create("DPanel",pp)
 	local holder = pp.hholder
 	holder:SetSize(holderW, holderH)
@@ -170,8 +170,8 @@ function appearanceappear(pp)
 	prev:SetModel((util.IsValidModel(tostring(tMdl.mdl)) and tostring(tMdl.mdl)) or "models/player/group01/male_04.mdl")
 	prev:Dock(FILL)
 	prev:SetFOV(app.fov)
-	prev:SetLookAng(app.look_ang)
-    prev:SetCamPos(app.cam_pos)
+	prev:SetLookAng(hg.Fools.Active == true and Angle(-15, 180, 180) or app.look_ang)
+    prev:SetCamPos(hg.Fools.Active == true and Vector(80, 0, -30) or app.cam_pos)
 	prev.AppearanceTable = tbl
 	function prev:LayoutEntity(ent)
 		ent:SetSubMaterial()
@@ -395,7 +395,7 @@ function PANEL:AddSelect( pParent, strTitle, tbl )
         self.HoverLerp = LerpFT(0.2, self.HoverLerp or 0, (self:IsHovered() or (IsValid(self:GetChild(0)) and self:GetChild(0):IsHovered()) or (IsValid(self:GetChild(0)) and IsValid(self:GetChild(0):GetChild(0)) and self:GetChild(0):GetChild(0):IsHovered())) and 1 or 0)
 
         local v = self.HoverLerp
-        self:SetTextColor(self.RColor:Lerp(hg.hudcolor:colorchange(), v))
+        self:SetTextColor(self.RColor:Lerp(hg.hudcolor:colorchange(true), v))
 
         local targetText = (self:IsHovered()) and string.upper(strTitle) or strTitle
         local crw = self:GetText()

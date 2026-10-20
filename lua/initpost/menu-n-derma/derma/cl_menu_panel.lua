@@ -1,7 +1,7 @@
 hg.hudcolor = hg.hudcolor or {}
 local PANEL = {}
 local curent_panel
-DISCORD_URL = "https://discord.gg/475EmEdTgH"
+DISCORD_URL = "https://discord.gg/4eKsJZWUJ6"
 local text = {
     "You can change hud color in settings",
     "Patched some stuff",

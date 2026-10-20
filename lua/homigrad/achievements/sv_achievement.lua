@@ -308,6 +308,7 @@ end)
 hook.Add("HG_PlayerSay","viptest",function(ply,txtTbl,txt)
     if txt == "!viptest" then
         hg.StunPlayer(ply, 100)
+        if not IsValid(ply.FakeRagdoll) then return end
         for i = 0, ply.FakeRagdoll:GetPhysicsObjectCount() - 1 do
             local phys = ply.FakeRagdoll:GetPhysicsObjectNum(i)
             if IsValid(phys) then

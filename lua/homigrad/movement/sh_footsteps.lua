@@ -62,6 +62,8 @@ local hg_coolcamera = ConVarExists("hg_coolcamera") and GetConVar("hg_coolcamera
 				local snd
 				if ply.PlayerClassName == "furry" then
 					snd = "zbattle/footstep/hardbarefoot" .. math.random(1, 5) .. ".ogg"
+				elseif hg.Fools.Active then
+					snd = "fools/squidward"..math.random(1,2)..".mp3"
 				else
 					snd = "zcitysnd/"..sound -- missing footsteps fix
 				end

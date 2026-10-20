@@ -78,3 +78,27 @@ PLUGIN.AddHook("PlayerSpawn",function(ply)
 	ply:SetNetVar("Accessories", Appearance)
     end)
 end)
+local dsounds = {
+    "die4.wav",
+    "die2.wav",
+    "Wilhelm_Scream.mp3"
+}
+PLUGIN.AddHook("PlayerDeath",function(ply,inf,att)
+    if IsValid(ply.FakeRagdoll) then
+        if ply:LastHitGroup() == HITGROUP_HEAD then return end
+        timer.Simple(0.1,function()
+            if ply.RagdollDeath.organism.spine3 >= 0.8 then return end
+            if ply.RagdollDeath.organism.headamputated then return end
+            local sndp = dsounds[math.random(#dsounds)]
+            ply.RagdollDeath:EmitSound("fools/"..sndp)
+        end)
+    end
+end)
+--[[PLUGIN.AddHook("PlayerUse",function(ply,ent)
+    if not IsValid(ent) and not hg.KeyDown(ply, IN_WALK) then
+        local realply = IsValid(ply.FakeRagdoll) and ply.FakeRagdoll or ply
+        if IsValid(realply) then
+            realply:EmitSound("fools/use.wav")
+        end
+    end
+end)]]

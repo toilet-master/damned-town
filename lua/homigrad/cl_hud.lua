@@ -215,9 +215,10 @@ local menuPanel
 local colBack = Color(0,0,0)
 local surface, draw, hook, IsColor, IsValid, math, input = surface, draw, hook, IsColor, IsValid, math, input
 
-
+local text3d = GetConVar("hg_pp3dtext") or CreateClientConVar("hg_pp3dtext", "0", true, false, "Toggle 3D text on paperdoll's head", 0, 1)
 local function CreateRadialMenu(options_arg, bAutoClose)
 	local sizeX, sizeY = ScrW(), ScrH()
+	local hashead = true
 	hg.radialOptions = {}
 	local paining = lply.organism and lply.organism.pain and (lply.organism.pain > 100 or lply.organism.brain > 0.2) or false
 	
@@ -279,6 +280,73 @@ local function CreateRadialMenu(options_arg, bAutoClose)
 	
 	local sizePan = 0
 	local optionSelected = {}
+	if not util.IsValidModel(lply:GetModel()) then
+		return
+	end
+	local dp = vgui.Create("DPanel",menuPanel)
+	dp:SetSize(ScrW()/4,ScrH())
+	dp:Dock(LEFT)
+	dp.Paint = function()
+	end
+	local model = vgui.Create("DModelPanel",dp)
+	model:Dock(FILL)
+	model:SetMouseInputEnabled(false)
+	
+	model:SetModel(lply:GetModel())
+	local ent = model:GetEntity()
+		
+	if ent:GetModel() == lply:GetModel() then
+		ent:SetNWVector("PlayerColor", lply:GetNWVector("PlayerColor", Vector(1, 1, 1)))
+		for i = 0, #ent:GetMaterials() - 1 do
+			ent:SetSubMaterial(i, lply:GetSubMaterial(i))
+		end
+	else
+		ent:SetSubMaterial()
+	end
+	local headpos = ent:GetBonePosition(ent:LookupBone("ValveBiped.Bip01_Head1"))
+	model:SetLookAt(headpos)
+	model:SetCamPos(headpos-Vector(-75, 0, 0))	
+	model:SetFOV(45)
+	model.PostDrawModel = function()
+		if not DrawAccesories or ent:GetModel() ~= lply:GetModel() then return end
+			local acc = lply:GetNetVar("Accessories")
+			if not istable(acc) then return end
+		for _, a in ipairs(acc) do
+			local data = hg.Accessories and hg.Accessories[a]
+			if data then DrawAccesories(ent, ent, a, data, false, true) end
+		end
+		ent:SetupBones()
+		if !paining then
+			if text3d:GetBool() == false then
+				return 
+			end
+			local head = ent:LookupBone("ValveBiped.Bip01_Head1")
+			if not head then
+				hashead = false
+				return
+			end
+			local pos,ang = ent:GetBonePosition(head)
+			ang:RotateAroundAxis(ang:Forward(), 90)
+    		ang:RotateAroundAxis(ang:Right(), 90)
+			cam.Start3D2D(Vector(pos.x+5,pos.y-8.5,pos.z+25), Angle(0,ang.y+90,90), 0.125)
+				draw.DrawText(lply:GetPlayerName(), "HomigradFontGigantoNormous", 2, 2, Color(0,0,0))
+				local col = lply:GetPlayerColor():ToColor()
+        		draw.DrawText(lply:GetPlayerName(), "HomigradFontGigantoNormous", 0, 0, col)
+    		cam.End3D2D()
+			cam.Start3D2D(Vector(pos.x+5,pos.y-8.5,pos.z+20), Angle(0,ang.y+90,90), 0.125)
+				draw.SimpleText( ( (lply.role and lply.role.name) or ""), "HomigradFontGigantoNormous", 2, 2, Color(0,0,0))
+        		draw.SimpleText( ( (lply.role and lply.role.name) or ""), "HomigradFontGigantoNormous", 0, 0, lply.role and lply.role.color or incoentCol)
+    		cam.End3D2D()
+			cam.Start3D2D(Vector(pos.x+5,pos.y-8.5,pos.z+15), Angle(0,ang.y+90,90), 0.125)
+				draw.SimpleText( ( (lply.sub and lply.sub.name) or ""), "HomigradFontGigantoNormous", 2, 2, Color(0,0,0))
+        		draw.SimpleText( ( (lply.sub and lply.sub.name) or ""), "HomigradFontGigantoNormous", 0, 0, lply.sub and lply.sub.color or incoentCol)
+    		cam.End3D2D()
+		end
+    end
+	
+	model.LayoutEntity = function(ent)
+		model:SetAnimated(false)
+	end
 	menuPanel.Paint = function(self, w, h)
 		local x, y = input.GetCursorPos()
 		x = x - sizeX / 2
@@ -382,16 +450,18 @@ local function CreateRadialMenu(options_arg, bAutoClose)
 				draw.DrawText(txt, "HomigradFont", scrW / 2 + math.sin(a) * r * 0.75, scrH / 2 + math.cos(a) * r * 0.75, colWhite, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 			end
 		end
-		if !paining then
-			draw.SimpleText(lply:GetPlayerName(),"HomigradFontGigantoNormous",scrW * 0.0215* viewLerp,scrH * 0.042, colBack, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-			draw.SimpleText( ( (lply.role and lply.role.name) or ""),"HomigradFontGigantoNormous" ,scrW * 0.0215 * viewLerp,scrH * 0.098, colBack, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-			draw.SimpleText( ( (lply.sub and lply.sub.name) or ""),"HomigradFontGigantoNormous" ,scrW * 0.0215 * viewLerp,scrH * 0.15, colBack, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-			local col = lply:GetPlayerColor():ToColor()
-			draw.SimpleText(lply:GetPlayerName(),"HomigradFontGigantoNormous",scrW * 0.02 * viewLerp,scrH * 0.04, col, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-			draw.SimpleText( ( (lply.role and lply.role.name) or ""),"HomigradFontGigantoNormous" ,scrW * 0.02 * viewLerp,scrH * 0.095, lply.role and lply.role.color or incoentCol, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-			local walkBtn = input.LookupBinding("+walk") or "BIND YOUR +WALK KEY PLEASE. WRITE \"bind alt +walk\" IN CONSOLE FOR THE LOVE OF GOD"
-			draw.SimpleText(walkBtn .. " | Misc", "HomigradFont", scrW * (0.981 + (0.04 * (1-viewLerp))),scrH * 0.9615, colBack, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
-			draw.SimpleText(walkBtn .. " | Misc", "HomigradFont", scrW * (0.98 + (0.04 * (1-viewLerp))),scrH * 0.96, colWhite, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+		if not hashead or text3d:GetBool() == false then
+			if !paining then
+				
+				draw.SimpleText(lply:GetPlayerName(),"HomigradFontGigantoNormous",scrW * 0.0215* viewLerp,scrH * 0.042, colBack, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+				draw.SimpleText( ( (lply.role and lply.role.name) or ""),"HomigradFontGigantoNormous" ,scrW * 0.0215 * viewLerp,scrH * 0.098, colBack, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+				draw.SimpleText( ( (lply.sub and lply.sub.name)) or "","HomigradFontGigantoNormous" ,scrW * 0.023 * viewLerp,scrH * 0.152, colBack, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+				local col = lply:GetPlayerColor():ToColor()
+				draw.SimpleText(lply:GetPlayerName(),"HomigradFontGigantoNormous",scrW * 0.02 * viewLerp,scrH * 0.04, col, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+				draw.SimpleText( ( (lply.role and lply.role.name) or ""),"HomigradFontGigantoNormous" ,scrW * 0.02 * viewLerp,scrH * 0.095, lply.role and lply.role.color or incoentCol, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+				draw.SimpleText( ( (lply.sub and lply.sub.name)) or "","HomigradFontGigantoNormous" ,scrW * 0.0215 * viewLerp,scrH * 0.15, lply.sub and lply.sub.color or incoentCol, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+			end
+			
 		end
 	end
 end

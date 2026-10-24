@@ -1088,7 +1088,6 @@ else
 				end
 			end)
 		end
-		
 		local model = ent.bandagesModel
 		model:SetNoDraw(true)
 		model:SetPos(ent:GetPos() + vector_up * 1)
@@ -1099,7 +1098,12 @@ else
 		
 		if not model.BodygroupsApplied then 
 			for k, v in pairs(ent.bandaged_limbs) do
+				
 				if dontmakehands and (k == "ValveBiped.Bip01_L_Hand" or k == "ValveBiped.Bip01_R_Hand") then continue end -- ez
+				if k == "ValveBiped.Bip01_Head1" then
+					print("HEAD")
+					model:DrawModel()
+				end
 				model:SetBodygroup(model:FindBodygroupByName( ThatPlyIsFemale(ent) and BodyGroupsFemale[k] or BodyGroupsMale[k] or ""), 1)
 			end
 

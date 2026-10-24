@@ -86,9 +86,10 @@ function CLASS.On(self)
 		self:SetNetVar("Accessories", "")
 		self.CurAppearance = Appearance
 	end
-
-    self:SetNWString("PlayerName", "Zombie")
-	self:SetModel("models/zcity/player/zombie_classic.mdl")
+	self:SetNWString("PlayerName", "Zombie")
+	if SERVER then
+		self:SetModel("models/zcity/player/zombie_classic.mdl")
+	end
 
 	--\\ Set cloth and other materials
 	if self:GetModel() == "models/zcity/player/zombie_classic.mdl" then

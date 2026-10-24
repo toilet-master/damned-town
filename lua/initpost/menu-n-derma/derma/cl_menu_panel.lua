@@ -1,7 +1,10 @@
 hg.hudcolor = hg.hudcolor or {}
 local PANEL = {}
 local curent_panel
-DISCORD_URL = "https://discord.gg/4eKsJZWUJ6"
+local dc_urls = {
+    [1] = {name = "Z-City",link = "https://discord.gg/475EmEdTgH"},
+    [2] = {name = "Damned-Town",link = "https://discord.gg/4eKsJZWUJ6"}
+}
 local text = {
     "You can change hud color in settings",
     "Patched some stuff",
@@ -9,14 +12,17 @@ local text = {
     "Changelog button",
     "Gore models",
     "An ability to change gunman's role",
+    "IED rework"
 }
-local function changelogshi()
-    local sizeX, sizeY = ScrW() / 1.5, ScrH() / 1.5
-	local chn = vgui.Create("ZFrame")
+local function changelogshi(pp)
+    local sizeX, sizeY = ScrW() / 2.5, ScrH() / 2.5
+	local chn = vgui.Create("ZFrame",pp)
 
 	chn:SetTitle("Changelog")
 	chn:SetSize(sizeX, sizeY)
 	chn:Center()
+    local x,y = pp:GetSize()
+    chn:SetPos(x/2,y/5)
 	chn:MakePopup()
 	chn:SetKeyBoardInputEnabled(false)
 	chn:ShowCloseButton(true)
@@ -49,10 +55,62 @@ function menumusicrn(filerr,volume)
 	end
 end )
 end
+
+function choosediscordurl(lua,pp)
+    local pan = vgui.Create("DPanel",pp)
+    local xbars,ybars = 17,30
+    pan:SetAlpha(0)
+    pan:SetSize(ScrW()/2.5,ScrH())
+    pan:Center()
+    pan:SetPos(ScrW()/2.5,0)
+    local x,y = pan:GetSize()
+    
+    pan.Paint = function(self,w,h)
+        draw.RoundedBox(0,0,0,w,h,Color(26,26,26))
+        surface.SetDrawColor(107, 107, 107,20)
+
+        for i = 1, (ybars + 1) do
+            surface.DrawRect((sw / ybars) * i - (CurTime() * 15 % (sw / ybars)), 0, ScreenScale(1), sh)
+        end
+
+        for i = 1, (xbars + 1) do
+            surface.DrawRect(0, (sh / xbars) * (i - 1) + (CurTime() * 15 % (sh / xbars)), sw, ScreenScale(1))
+        end
+
+    end
+    pan.PaintOver = function(self,w,h)
+        surface.SetDrawColor(Color(0,0,0))
+        surface.DrawOutlinedRect(0, 0, w, h, 2.5)
+    end
+    for i,v in ipairs(dc_urls) do
+        local button = vgui.Create("DButton",pan)
+        button:SetText("")
+        button:SetSize(ScrW()/5,ScrH()/4.25)
+        button:Center()
+        local x, y = button:GetSize()
+        button:SetPos(ScrW()/15, i * 1.25*y)
+        button.Paint = function(self,w,h)
+            surface.SetDrawColor(44, 44, 44, 255)
+            surface.DrawRect(0, 0, w, h)
+		    surface.SetDrawColor(0,0,0)
+		    surface.DrawOutlinedRect(0, 0, w, h, 2)
+            surface.SetFont("HomigradFontBig")
+            local x,y = surface.GetTextSize("smth-city")
+            surface.SetTextPos(x/w*350,h/2.5)
+
+            surface.SetTextColor(Color(255,255,255))
+            surface.DrawText(v.name)
+        end
+        button.DoClick = function()
+            lua:Close() gui.OpenURL(v.link)
+        end
+    end
+    pan:AlphaTo(255,0.25)
+end
 local Selects = {
     {Title = "Disconnect", Func = function(luaMenu) RunConsoleCommand("disconnect") end},
     {Title = "Main Menu", Func = function(luaMenu) gui.ActivateGameUI() luaMenu:Close() end},
-    {Title = "Discord", Func = function(luaMenu) luaMenu:Close() gui.OpenURL(DISCORD_URL)  end},
+    {Title = "Discord", Func = function(luaMenu,pp) choosediscordurl(luaMenu,pp)  end},
     {Title = "Pick Role",
     GamemodeOnly = true,     
     Func = function(luaMenu, pp)
@@ -66,7 +124,7 @@ local Selects = {
         hg.DrawSettings(pp) 
     end},
     {Title = "Changelog", Func = function(luaMenu,pp) 
-        changelogshi()
+        changelogshi(pp)
     end},
     {Title = "Appearance", Func = function(luaMenu,pp) hg.CreateApperanceMenu(pp) end},
     {Title = "Return", Func = function(luaMenu) luaMenu:Close() end},

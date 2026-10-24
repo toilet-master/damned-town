@@ -16,7 +16,7 @@ SWEP.FakePos = Vector(-18, 2, 9)
 SWEP.FakeAng = Angle(0.25, 0, 0)
 
 SWEP.FakeAttachment = "shell"
-SWEP.AttachmentPos = Vector(-0.1,-0.3,2)
+SWEP.AttachmentPos = Vector(0.7,-0.8,30)
 SWEP.AttachmentAng = Angle(90,0,0)
 SWEP.FakeBodyGroups = "000000000"
 SWEP.BarrelLength = 40
